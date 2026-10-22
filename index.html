@@ -531,6 +531,9 @@
     .ph-guess-btn{display:flex;justify-content:space-between;align-items:center;width:100%;padding:.75rem .9rem;border:1.5px solid var(--sep2);border-radius:var(--r2);background:var(--bg2);font-size:15px;font-weight:600;color:var(--lbl);cursor:pointer;font-family:inherit;text-align:left}
     .ph-guess-btn:active{background:var(--fill2)}
     .ph-guess-btn span{font-size:12px;font-weight:500;color:var(--lbl2)}
+    .ph-guess-btn.learned{border-color:var(--green);background:#F0FDF4}
+    .ph-guess-btn.learned span{color:var(--green-d);font-weight:700}
+    .ph-teach{display:flex;gap:.5rem;align-items:flex-start;background:var(--blue-l);border-radius:var(--r2);padding:.6rem .7rem;font-size:12px;color:var(--lbl2);line-height:1.45;margin-top:.5rem}
     .ph-guess-err{font-size:13px;font-weight:600;color:var(--accent);min-height:16px;margin:.4rem 0}
     .ph-res-t{font-size:12px;font-weight:700;color:var(--lbl2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.45rem}
     .ph-opt{display:flex;align-items:center;gap:9px;padding:.6rem .7rem;border-radius:var(--r2);border:1.5px solid var(--sep2);margin-bottom:.35rem;cursor:pointer;transition:all .15s;background:var(--bg2)}
@@ -1296,6 +1299,10 @@
           <button class="data-btn danger" onclick="clearAllData()"><span class="db-icon">🗑️</span>Clear All</button>
         </div>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+        <div class="profile-row" style="margin:.9rem 0 0">
+          <div><div class="profile-name" style="font-size:14px">Foods learned from your photos</div><div class="profile-meta" id="learned-summary">None yet</div></div>
+          <button class="manual-btn" type="button" onclick="forgetLearnedFoods()">Reset</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1365,6 +1372,7 @@
         <input class="manual-in" id="ph-guess-input" type="text" maxlength="60" placeholder="Type the food, e.g. chicken salad" aria-label="Food name">
         <button class="manual-btn search" type="submit">Search</button>
       </form>
+      <div class="ph-teach"><span aria-hidden="true">📚</span><span><strong style="color:var(--lbl)">Typing teaches CheckedLife.</strong> When you type the food and add it to your log, the app remembers what this photo looks like so it can recognize that food next time. Learning stays on this device; your photo itself is not saved.</span></div>
       <div class="ph-guess-err" id="ph-guess-err" role="status"></div>
       <div class="pm-actions" style="padding-left:0;padding-right:0"><button class="pm-deny" type="button" onclick="closeProductModal()">Cancel</button><button class="pm-conf" type="button" onclick="retakePhoto()">Retake photo</button></div>
     </div>
@@ -1875,8 +1883,8 @@ function skipOnboarding(){
 }
 
 // ─── DATA PORTABILITY ───────────────────────────────────
-const BACKUP_KEYS=['cl_account','cl_food','cl_n','cl_chk','cl_water','cl_date','cl_nut_hist','cl_wo_hist','cl_day_hist','cl_profile',WEIGHT_KEY,CAL_GOAL_KEY,MED_PLAN_KEY,MED_LOG_KEY,PPG_HISTORY_KEY,LABEL_THRESHOLD_KEY];
-const JSON_SHAPES={cl_account:'object',cl_food:'array',cl_n:'object',cl_chk:'object',cl_nut_hist:'array',cl_wo_hist:'array',cl_day_hist:'array',cl_profile:'object'};
+const BACKUP_KEYS=['cl_learned_foods','cl_account','cl_food','cl_n','cl_chk','cl_water','cl_date','cl_nut_hist','cl_wo_hist','cl_day_hist','cl_profile',WEIGHT_KEY,CAL_GOAL_KEY,MED_PLAN_KEY,MED_LOG_KEY,PPG_HISTORY_KEY,LABEL_THRESHOLD_KEY];
+const JSON_SHAPES={cl_learned_foods:'array',cl_account:'object',cl_food:'array',cl_n:'object',cl_chk:'object',cl_nut_hist:'array',cl_wo_hist:'array',cl_day_hist:'array',cl_profile:'object'};
 JSON_SHAPES[MED_PLAN_KEY]='array';JSON_SHAPES[MED_LOG_KEY]='array';JSON_SHAPES[PPG_HISTORY_KEY]='array';
 async function exportData(){
   const data={};BACKUP_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)data[k]=v;});
@@ -2361,6 +2369,7 @@ function lookupManual(){const v=document.getElementById('manual-bc').value.trim(
 document.getElementById('manual-bc').addEventListener('keydown',e=>{if(e.key==='Enter')lookupManual();});
 document.getElementById('food-search-q').addEventListener('keydown',e=>{if(e.key==='Enter')searchFoodByName();});
 async function searchFoodByName(){
+  photoEmbedding=null;photoLabel=null;
   const q=document.getElementById('food-search-q').value.trim();
   if(!q){showStat('Enter a food name to search.',true);return;}
   showLoad(true,'Searching for "'+q+'"…');showStat('');
@@ -2503,6 +2512,67 @@ function usdaToItem(food){
 }
 let pendingPhotoAlts=[],photoAltIdx=0,capturedPhotoURL=null;
 function openPhotoScan(){document.getElementById('photo-input').click();}
+// ─── ON-DEVICE FOOD LEARNING ───────────────────────────
+// When a user corrects a photo, we keep the image's MobileNet "fingerprint" (embedding),
+// not the photo. New photos are compared with saved fingerprints to suggest foods the
+// user has taught the app before.
+const LEARNED_FOODS_KEY='cl_learned_foods';
+const LEARN_MAX_PER_FOOD=10,LEARN_MAX_TOTAL=150,LEARN_MIN_SIMILARITY=0.7;
+let learnedFoods=readJSON(LEARNED_FOODS_KEY,[]);
+if(!Array.isArray(learnedFoods))learnedFoods=[];
+learnedFoods=learnedFoods.filter(x=>x&&typeof x.label==='string'&&typeof x.v==='string');
+let photoEmbedding=null,photoLabel=null;
+function encodeEmbedding(vec){
+  const bytes=new Int8Array(vec.length);
+  vec.forEach((x,i)=>{bytes[i]=Math.max(-127,Math.min(127,Math.round(x*127)));});
+  let bin='';new Uint8Array(bytes.buffer).forEach(b=>{bin+=String.fromCharCode(b);});
+  return btoa(bin);
+}
+function decodeEmbedding(text){
+  const bin=atob(text),bytes=new Int8Array(bin.length);
+  for(let i=0;i<bin.length;i++)bytes[i]=(bin.charCodeAt(i)<<24)>>24;
+  return Float32Array.from(bytes,b=>b/127);
+}
+function normalize(vec){
+  let sum=0;for(const x of vec)sum+=x*x;
+  const len=Math.sqrt(sum)||1;
+  return Float32Array.from(vec,x=>x/len);
+}
+async function photoFingerprint(canvas){
+  const tensor=tfModel.infer(canvas,true);
+  try{return normalize(await tensor.data());}finally{tensor.dispose();}
+}
+// Best similarity per learned food, highest first
+function learnedMatches(vec){
+  const best=new Map();
+  for(const item of learnedFoods){
+    const saved=decodeEmbedding(item.v);
+    if(saved.length!==vec.length)continue;
+    let dot=0;for(let i=0;i<vec.length;i++)dot+=vec[i]*saved[i];
+    const sim=dot/(Math.sqrt(saved.reduce((s,x)=>s+x*x,0))||1);
+    if(sim>=LEARN_MIN_SIMILARITY&&sim>(best.get(item.label)?.similarity||0))best.set(item.label,{term:item.term,displayName:item.label,similarity:sim,learned:true});
+  }
+  return [...best.values()].sort((a,b)=>b.similarity-a.similarity);
+}
+function learnFood(vec,label,term){
+  const sameFood=learnedFoods.filter(x=>x.label===label);
+  if(sameFood.length>=LEARN_MAX_PER_FOOD)learnedFoods.splice(learnedFoods.indexOf(sameFood[0]),1);
+  learnedFoods.push({label,term,v:encodeEmbedding(vec),ts:Date.now()});
+  if(learnedFoods.length>LEARN_MAX_TOTAL)learnedFoods.splice(0,learnedFoods.length-LEARN_MAX_TOTAL);
+  try{localStorage.setItem(LEARNED_FOODS_KEY,JSON.stringify(learnedFoods));}catch{learnedFoods.shift();}
+  renderLearnedSummary();
+}
+function renderLearnedSummary(){
+  const el=document.getElementById('learned-summary');if(!el)return;
+  const names=[...new Set(learnedFoods.map(x=>x.label))];
+  el.textContent=names.length?`${names.length} food${names.length===1?'':'s'}: ${names.slice(0,6).join(', ')}${names.length>6?'…':''}`:'None yet. Type a food after a photo scan to teach the app.';
+}
+function forgetLearnedFoods(){
+  if(!learnedFoods.length||!confirm('Forget every food the app has learned from your photos?'))return;
+  learnedFoods=[];try{localStorage.removeItem(LEARNED_FOODS_KEY);}catch{}
+  renderLearnedSummary();
+}
+
 let photoGuesses=[];
 async function handlePhoto(input){
   if(!input.files?.[0])return;
@@ -2510,14 +2580,20 @@ async function handlePhoto(input){
   if(capturedPhotoURL)URL.revokeObjectURL(capturedPhotoURL);
   capturedPhotoURL=URL.createObjectURL(file);
   showLoad(true,'Analyzing photo…');showStat('');
-  let guesses=[];
+  let guesses=[];photoEmbedding=null;photoLabel=null;
   try{
     if(!window.tf)await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js');
     if(!window.mobilenet)await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js');
     if(!tfModel){document.getElementById('ld-msg').textContent='Loading food recognizer (first time only)…';tfModel=await window.mobilenet.load({version:2,alpha:1.0});}
     document.getElementById('ld-msg').textContent='Identifying food in photo…';
-    const img=await fileToImg(file);
-    guesses=extractFoodTerms(await tfModel.classify(centerSquare(img),20)).slice(0,4);
+    const square=centerSquare(await fileToImg(file));
+    const modelGuesses=extractFoodTerms(await tfModel.classify(square,20));
+    // Learning is a bonus: if the fingerprint fails, still show the model's guesses
+    try{photoEmbedding=await photoFingerprint(square);}catch(e){console.warn('Photo fingerprint failed',e);photoEmbedding=null;}
+    // Foods the user taught the app come first, then the model's own guesses
+    const learned=photoEmbedding?learnedMatches(photoEmbedding).slice(0,3):[];
+    const taken=new Set(learned.map(g=>g.displayName.toLowerCase()));
+    guesses=learned.concat(modelGuesses.filter(g=>!taken.has(g.displayName.toLowerCase()))).slice(0,5);
   }catch(e){console.warn('Photo recognition failed',e);}
   finally{showLoad(false);}
   showPhotoGuesses(guesses);
@@ -2534,7 +2610,7 @@ function showPhotoGuesses(guesses){
   document.getElementById('photo-guess-wrap').style.display='block';
   document.getElementById('ph-guess-title').textContent=guesses.length?'What food is this?':"We couldn't recognize this food";
   document.getElementById('ph-guess-sub').textContent=guesses.length?"Tap the closest match. If none are right, type the food's name.":"The recognizer knows a limited set of foods. Type the name and we'll find its nutrition.";
-  document.getElementById('ph-guess-list').innerHTML=guesses.map((g,i)=>`<button type="button" class="ph-guess-btn" onclick="pickPhotoGuess(photoGuesses[${i}].term,photoGuesses[${i}].displayName)">${esc(g.displayName)}<span>${Math.round(g.confidence*100)}% match</span></button>`).join('');
+  document.getElementById('ph-guess-list').innerHTML=guesses.map((g,i)=>`<button type="button" class="ph-guess-btn${g.learned?' learned':''}" onclick="pickPhotoGuess(photoGuesses[${i}].term,photoGuesses[${i}].displayName)">${esc(g.displayName)}<span>${g.learned?'✓ Learned from you':Math.round(g.confidence*100)+'% match'}</span></button>`).join('');
   document.getElementById('ph-guess-input').value='';
   document.getElementById('ph-guess-err').textContent='';
   document.getElementById('product-modal').classList.add('open');
@@ -2546,6 +2622,7 @@ async function pickPhotoGuess(term,displayName){
   const err=document.getElementById('ph-guess-err');
   if(!term){err.textContent="Type the food's name first.";return;}
   err.textContent='';
+  photoLabel={label:(displayName||toTitleCase(term.toLowerCase())).slice(0,60),term};
   showLoad(true,'Looking up nutrition data…');
   try{
     let found=[];
@@ -2766,6 +2843,7 @@ function addLabeledFood(){
 
 // ─── OPEN FOOD FACTS ───────────────────────────────────
 async function fetchBarcode(bc){
+  photoEmbedding=null;photoLabel=null;
   bc=String(bc||'').replace(/\s+/g,'');
   if(!/^\d{8,14}$/.test(bc)){showStat('Enter a valid 8–14 digit barcode.',true);pendingMeal=null;return;}
   showLoad(true,'Looking up food data…');showStat('');
@@ -2871,7 +2949,7 @@ function makeItem(product,g,hasS,n){
 
 function closeProductModal(keepMeal=false){
   document.getElementById('product-modal').classList.remove('open');
-  pendingProduct=null;pendingPhotoProd=[];pendingPhotoAlts=[];photoGuesses=[];
+  pendingProduct=null;pendingPhotoProd=[];pendingPhotoAlts=[];photoGuesses=[];photoEmbedding=null;photoLabel=null;
   if(keepMeal!==true)pendingMeal=null;
   document.getElementById('photo-guess-wrap').style.display='none';
   document.getElementById('photo-header-wrap').style.display='none';
@@ -2886,6 +2964,8 @@ function confirmProduct(){
   const item=pendingProduct;pendingProduct=null;
   document.getElementById('product-modal').classList.remove('open');
   pendingPhotoProd=[];pendingPhotoAlts=[];
+  if(photoEmbedding&&photoLabel&&capturedPhotoURL)learnFood(photoEmbedding,photoLabel.label,photoLabel.term);
+  photoEmbedding=null;photoLabel=null;
   if(capturedPhotoURL){URL.revokeObjectURL(capturedPhotoURL);capturedPhotoURL=null;}
   addFood(item);
 }
@@ -3515,7 +3595,7 @@ function showStat(msg,err){
 ['cl_coach_history','cl_coach_share','cl_coach_user_key'].forEach(k=>{try{localStorage.removeItem(k);}catch{}});
 loadData();
 document.getElementById('hero-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-renderWaterTag();renderAccount();
+renderWaterTag();renderAccount();renderLearnedSummary();
 buildStreak();buildChecklist();buildTips();buildFast();buildWtGrid();buildQuiz(0);
 renderFoodLog();renderNutBars();renderCalorieTracker();renderWoHist();runDiseaseAI();updateTodaySummary();updateReminders();
   document.getElementById('label-sodium-threshold').value=labelSodiumThreshold;
