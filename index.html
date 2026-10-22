@@ -2574,38 +2574,35 @@ function forgetLearnedFoods(){
 }
 
 // ─── FOOD-SPECIFIC MODEL ───────────────────────────────
-// Google's AIY Food V1 classifier (~2,000 foods), hosted in this repo under models/food/.
-// If those files are missing, the app falls back to MobileNet's general guesses.
-const FOOD_MODEL_URL='models/food/model.json',FOOD_LABELS_URL='models/food/labels.csv';
+// Google's AIY Food V1 classifier (~2,000 foods) in TensorFlow Lite format, stored in this
+// repo under models/food/. labels.txt has one food name per line, in the model's output order.
+// If the files are missing, the app falls back to MobileNet's general guesses.
+const FOOD_MODEL_URL='models/food/model.tflite',FOOD_LABELS_URL='models/food/labels.txt';
+const TFLITE_CDN='https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-tflite@0.0.1-alpha.10/';
 let foodModel=null,foodLabels=[],foodModelTried=false;
 async function loadFoodModel(){
   if(foodModelTried)return foodModel;
   foodModelTried=true;
   try{
-    const [model,labelText]=await Promise.all([
-      tf.loadGraphModel(FOOD_MODEL_URL),
-      fetch(FOOD_LABELS_URL).then(r=>{if(!r.ok)throw new Error('labels '+r.status);return r.text();})
-    ]);
-    // CSV rows look like "12,Pad thai"; the first row is a header
-    foodLabels=[];
-    labelText.trim().split(/\r?\n/).slice(1).forEach(line=>{
-      const comma=line.indexOf(',');
-      const id=Number(line.slice(0,comma)),name=line.slice(comma+1).replace(/^"|"$/g,'').trim();
-      if(Number.isInteger(id))foodLabels[id]=name;
-    });
-    foodModel=model;
+    const labelText=await fetch(FOOD_LABELS_URL).then(r=>{if(!r.ok)throw new Error('labels '+r.status);return r.text();});
+    if(!window.tflite)await loadScript(TFLITE_CDN+'dist/tf-tflite.min.js');
+    tflite.setWasmPath(TFLITE_CDN+'wasm/');
+    foodModel=await tflite.loadTFLiteModel(FOOD_MODEL_URL);
+    foodLabels=labelText.split(/\r?\n/).map(x=>x.trim());
   }catch(e){console.info('Food model not available, using MobileNet only',e);foodModel=null;}
   return foodModel;
 }
 async function classifyWithFoodModel(canvas,count=5){
-  const scores=tf.tidy(()=>{
-    let out=foodModel.predict(tf.browser.fromPixels(canvas).toFloat().div(255).expandDims(0));
-    if(Array.isArray(out))out=out[0];
-    return out.squeeze();
-  });
-  const values=await scores.data();scores.dispose();
-  return Array.from(values,(confidence,id)=>({id,confidence}))
-    .filter(x=>foodLabels[x.id]&&!/^__background__$/i.test(foodLabels[x.id]))
+  // This model takes raw 0-255 pixels and returns scores from 0 to 255
+  const input=foodModel.inputs[0];
+  const pixels=tf.browser.fromPixels(canvas);
+  const batch=input.dtype==='float32'?pixels.toFloat().div(255).expandDims(0):pixels.expandDims(0);
+  const output=foodModel.predict(batch);
+  const values=await output.data();
+  const scale=output.dtype==='float32'?1:255;
+  tf.dispose([pixels,batch,output]);
+  return Array.from(values,(score,id)=>({id,confidence:score/scale}))
+    .filter(x=>foodLabels[x.id]&&!/^(none|background|__background__)$/i.test(foodLabels[x.id]))
     .sort((a,b)=>b.confidence-a.confidence).slice(0,count)
     .filter((x,i)=>i===0||x.confidence>=0.03)
     .map(x=>({term:foodLabels[x.id],displayName:foodLabels[x.id],confidence:x.confidence}));
