@@ -2593,14 +2593,22 @@ async function loadFoodModel(){
   return foodModel;
 }
 async function classifyWithFoodModel(canvas,count=5){
-  // This model takes raw 0-255 pixels and returns scores from 0 to 255
-  const input=foodModel.inputs[0];
+  // Resize to the model's input size (192×192 for AIY Food). It takes raw 0-255 pixels
+  // and returns scores from 0 to 255.
+  const input=foodModel.inputs[0],size=input.shape[1]||224;
+  if(canvas.width!==size){
+    const resized=document.createElement('canvas');resized.width=resized.height=size;
+    resized.getContext('2d').drawImage(canvas,0,0,size,size);
+    canvas=resized;
+  }
   const pixels=tf.browser.fromPixels(canvas);
   const batch=input.dtype==='float32'?pixels.toFloat().div(255).expandDims(0):pixels.expandDims(0);
-  const output=foodModel.predict(batch);
-  const values=await output.data();
-  const scale=output.dtype==='float32'?1:255;
-  tf.dispose([pixels,batch,output]);
+  let output=null,values,scale;
+  try{
+    output=foodModel.predict(batch);
+    values=await output.data();
+    scale=output.dtype==='float32'?1:255;
+  }finally{tf.dispose([pixels,batch,output].filter(Boolean));}
   return Array.from(values,(score,id)=>({id,confidence:score/scale}))
     .filter(x=>foodLabels[x.id]&&!/^(none|background|__background__)$/i.test(foodLabels[x.id]))
     .sort((a,b)=>b.confidence-a.confidence).slice(0,count)
@@ -2623,7 +2631,11 @@ async function handlePhoto(input){
     document.getElementById('ld-msg').textContent='Identifying food in photo…';
     const square=centerSquare(await fileToImg(file));
     if(await loadFoodModel())document.getElementById('ld-msg').textContent='Identifying food in photo…';
-    const modelGuesses=foodModel?await classifyWithFoodModel(square):extractFoodTerms(await tfModel.classify(square,20));
+    let modelGuesses=null;
+    if(foodModel){
+      try{modelGuesses=await classifyWithFoodModel(square);}catch(e){console.warn('Food model failed, using MobileNet',e);}
+    }
+    if(!modelGuesses)modelGuesses=extractFoodTerms(await tfModel.classify(square,20));
     // Learning is a bonus: if the fingerprint fails, still show the model's guesses
     try{photoEmbedding=await photoFingerprint(square);}catch(e){console.warn('Photo fingerprint failed',e);photoEmbedding=null;}
     // Foods the user taught the app come first, then the model's own guesses
