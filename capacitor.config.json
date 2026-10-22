@@ -1,0 +1,10 @@
+{
+  "appId": "com.checkedlife.app",
+  "appName": "CheckedLife",
+  "webDir": "www",
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#C8323F"
+    }
+  }
+}

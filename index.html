@@ -8,6 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="CheckedLife"/>
   <meta name="theme-color" content="#F7F3F1"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
   <meta name="description" content="A stroke prevention daily health companion. Track habits, log workouts, scan food, and monitor your cardiovascular health."/>
   <title>CheckedLife — Stroke Prevention</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='11' fill='%23C8323F'/%3E%3Cpath d='M15 10v28h9l15-19' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" type="image/svg+xml"/>
@@ -927,7 +929,7 @@
         </div>
         <div id="med-list" class="med-list"></div>
         <div id="med-status" class="med-status" role="status"></div>
-        <p class="med-footnote">Reminders run while this page is open. Browser alerts depend on device settings and cannot bypass Focus or Do Not Disturb. This list is saved only in this browser.</p>
+        <p class="med-footnote" id="med-footnote">Reminders run while this page is open. Browser alerts depend on device settings and cannot bypass Focus or Do Not Disturb. This list is saved only in this browser.</p>
       </div>
 
       <!-- Streak -->
@@ -1530,6 +1532,12 @@ const todayDow=new Date().getDay();
 const sessionDate=new Date().toDateString();
 function checkDayRollover(){if(sessionDate!==new Date().toDateString())location.reload();}
 
+// ─── NATIVE APP (Capacitor) ────────────────────────────
+// Inside the iOS/Android app, Capacitor exposes native plugins; in a browser these are null.
+const IS_NATIVE=Boolean(window.Capacitor?.isNativePlatform?.());
+const NativePlugins=IS_NATIVE?window.Capacitor.Plugins:{};
+const NATIVE_NOTIFY_KEY='cl_native_notify';
+
 // ─── LOCALSTORAGE ──────────────────────────────────────
 const LS_KEYS={food:'cl_food',n:'cl_n',wo:'cl_wo',chk:'cl_chk',water:'cl_water',date:'cl_date',nutHist:'cl_nut_hist',woHist:'cl_wo_hist',dayHist:'cl_day_hist'};
 function readJSON(key,fallback){
@@ -1756,9 +1764,18 @@ function skipOnboarding(){
 const BACKUP_KEYS=['cl_food','cl_n','cl_chk','cl_water','cl_date','cl_nut_hist','cl_wo_hist','cl_day_hist','cl_profile',WEIGHT_KEY,CAL_GOAL_KEY,MED_PLAN_KEY,MED_LOG_KEY,PPG_HISTORY_KEY,LABEL_THRESHOLD_KEY];
 const JSON_SHAPES={cl_food:'array',cl_n:'object',cl_chk:'object',cl_nut_hist:'array',cl_wo_hist:'array',cl_day_hist:'array',cl_profile:'object'};
 JSON_SHAPES[MED_PLAN_KEY]='array';JSON_SHAPES[MED_LOG_KEY]='array';JSON_SHAPES[PPG_HISTORY_KEY]='array';
-function exportData(){
+async function exportData(){
   const data={};BACKUP_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)data[k]=v;});
   data._exported=new Date().toISOString();
+  if(IS_NATIVE&&NativePlugins.Filesystem&&NativePlugins.Share){
+    // App webviews can't download files, so save to the cache and open the share sheet
+    try{
+      const path='checkedlife_backup_'+new Date().toISOString().slice(0,10)+'.json';
+      const file=await NativePlugins.Filesystem.writeFile({path,data:JSON.stringify(data,null,2),directory:'CACHE',encoding:'utf8'});
+      await NativePlugins.Share.share({title:'CheckedLife backup',url:file.uri});
+    }catch(e){if(!/cancel/i.test(String(e?.message)))alert('Could not export the backup.');}
+    return;
+  }
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download='checkedlife_backup_'+new Date().toISOString().slice(0,10)+'.json';
@@ -1796,7 +1813,8 @@ function importData(inp){
 }
 function clearAllData(){
   if(!confirm('This will permanently delete ALL your data, including medication reminders, pulse summaries, food logs, workouts, and habits. This cannot be undone.\n\nContinue?'))return;
-  BACKUP_KEYS.concat(['cl_disc_ok','cl_wo',COACH_HIST_KEY,COACH_SHARE_KEY,COACH_KEY_KEY]).forEach(k=>localStorage.removeItem(k));
+  BACKUP_KEYS.concat(['cl_disc_ok','cl_wo',COACH_HIST_KEY,COACH_SHARE_KEY,COACH_KEY_KEY,NATIVE_NOTIFY_KEY]).forEach(k=>localStorage.removeItem(k));
+  NativePlugins.LocalNotifications?.getPending().then(p=>p.notifications.length&&NativePlugins.LocalNotifications.cancel({notifications:p.notifications.map(n=>({id:n.id}))})).catch(()=>{});
   location.reload();
 }
 
@@ -1909,7 +1927,11 @@ function renderMedicationPlan(){
   const list=document.getElementById('med-list');
   if(!list)return;
   const notify=document.getElementById('med-notify-btn');
-  if(notify){
+  if(notify&&IS_NATIVE){
+    const on=localStorage.getItem(NATIVE_NOTIFY_KEY)==='1';
+    notify.textContent=on?'Phone alerts on':'Enable alerts';
+    notify.disabled=on;
+  }else if(notify){
     notify.textContent=!('Notification'in window)?'Alerts unavailable':Notification.permission==='granted'?'Browser alerts on':Notification.permission==='denied'?'Alerts blocked':'Enable alerts';
     notify.disabled=!('Notification'in window)||Notification.permission==='denied';
   }
@@ -1934,7 +1956,7 @@ function addMedicationReminder(){
   saveMedicationData();
   document.getElementById('med-name-input').value='';
   setMedicationStatus('Reminder saved on this device.');
-  renderMedicationPlan();checkMedicationReminders();
+  renderMedicationPlan();checkMedicationReminders();syncNativeMedicationNotifications();
 }
 function markMedicationTaken(id){
   const med=medicationPlan.find(item=>item.id===id);
@@ -1948,10 +1970,35 @@ function removeMedicationReminder(id){
   if(!med||!confirm(`Remove the reminder for ${med.name}? Its saved take history will also be removed.`))return;
   medicationPlan=medicationPlan.filter(item=>item.id!==id);
   medicationLog=medicationLog.filter(entry=>entry.medId!==id);
-  saveMedicationData();renderMedicationPlan();checkMedicationReminders();
+  saveMedicationData();renderMedicationPlan();checkMedicationReminders();syncNativeMedicationNotifications();
   setMedicationStatus('Reminder removed.');
 }
+// Schedules one daily repeating phone notification per reminder (fires even when the app is closed)
+async function syncNativeMedicationNotifications(){
+  const LN=NativePlugins.LocalNotifications;
+  if(!LN||localStorage.getItem(NATIVE_NOTIFY_KEY)!=='1')return;
+  try{
+    const pending=await LN.getPending();
+    if(pending.notifications.length)await LN.cancel({notifications:pending.notifications.map(n=>({id:n.id}))});
+    if(!medicationPlan.length)return;
+    await LN.schedule({notifications:medicationPlan.map((m,i)=>{
+      const [hour,minute]=m.time.split(':').map(Number);
+      return{id:1000+i,title:'CheckedLife medication reminder',body:`Scheduled reminder: ${m.name}. Follow your prescription label.`,schedule:{on:{hour,minute},allowWhileIdle:true}};
+    })});
+  }catch(e){console.warn('Native reminder scheduling failed',e);setMedicationStatus('Could not schedule phone alerts. In-app reminders still work.',true);}
+}
 async function enableMedicationNotifications(){
+  if(IS_NATIVE&&NativePlugins.LocalNotifications){
+    try{
+      const result=await NativePlugins.LocalNotifications.requestPermissions();
+      if(result.display!=='granted'){setMedicationStatus('Notifications are off for CheckedLife. Turn them on in your phone settings. In-app reminders still work.',true);return;}
+      localStorage.setItem(NATIVE_NOTIFY_KEY,'1');
+      await syncNativeMedicationNotifications();
+      renderMedicationPlan();
+      setMedicationStatus('Phone alerts are on. Each reminder repeats daily at its time, even when the app is closed.');
+    }catch{setMedicationStatus('Could not request notification permission. In-app reminders still work.',true);}
+    return;
+  }
   if(!('Notification'in window)){setMedicationStatus('This browser does not support notifications. In-app reminders still appear while the page is open.',true);return;}
   if(Notification.permission==='denied'){setMedicationStatus('Notifications are blocked in browser settings. In-app reminders still appear while the page is open.',true);return;}
   try{
@@ -1970,7 +2017,7 @@ function checkMedicationReminders(){
     else{banner.classList.remove('show');banner.textContent='';}
   }
   let changed=false;
-  if(document.visibilityState==='hidden'&&'Notification'in window&&Notification.permission==='granted'){
+  if(!IS_NATIVE&&document.visibilityState==='hidden'&&'Notification'in window&&Notification.permission==='granted'){
     due.forEach(m=>{
       if(m.lastAlertDate===today)return;
       try{new Notification('CheckedLife medication reminder',{body:`Scheduled reminder: ${m.name}. Follow your prescription label.`});m.lastAlertDate=today;changed=true;}catch{}
@@ -3474,6 +3521,10 @@ renderFoodLog();renderNutBars();renderCalorieTracker();renderWoHist();runDisease
   document.getElementById('label-sodium-threshold').value=labelSodiumThreshold;
   ['label-sodium','label-trans-fat'].forEach(id=>document.getElementById(id).addEventListener('input',updateNutritionLabelFlags));
   updateNutritionLabelFlags();
+  if(IS_NATIVE){
+    document.getElementById('med-footnote').textContent='After you enable alerts, each reminder repeats daily as a phone notification, even when the app is closed. Notifications follow your phone\'s Focus and Do Not Disturb settings. This list is saved only on this device.';
+    syncNativeMedicationNotifications();
+  }
   renderMedicationPlan();checkMedicationReminders();
   window.setInterval(()=>{checkDayRollover();checkMedicationReminders();},60000);
    document.addEventListener('visibilitychange',()=>{checkDayRollover();checkMedicationReminders();if(document.hidden){stopFastCamera();stopPpgScan(false);}});

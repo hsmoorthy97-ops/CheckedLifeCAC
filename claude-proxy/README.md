@@ -32,8 +32,9 @@ automatically, which would break the app during judging.
    Add `http://localhost:8000` too if you test locally:
    ```bash
    wrangler secret put ALLOWED_ORIGINS
-   # e.g. https://yourname.github.io,http://localhost:8000
+   # e.g. https://yourname.github.io,http://localhost:8000,capacitor://localhost,https://localhost
    ```
+   `capacitor://localhost` is the iOS app and `https://localhost` is the Android app.
 6. Deploy: `wrangler deploy`. Copy the URL it prints
    (like `https://checkedlife-coach.yourname.workers.dev`).
 7. In `index.html`, find `COACH_CONFIG` and paste the URL:
