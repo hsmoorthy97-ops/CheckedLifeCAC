@@ -54,6 +54,26 @@
     .disc-ok{width:100%;padding:15px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;cursor:pointer;font-family:-apple-system,sans-serif;box-shadow:0 4px 14px rgba(255,59,48,.35)}
 
     /* ─── ONBOARDING QUESTIONNAIRE ──────────────── */
+    #signup-modal,#lock-modal{display:none;position:fixed;inset:0;z-index:7800;background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center;backdrop-filter:blur(8px)}
+    #lock-modal{z-index:9000;background:linear-gradient(155deg,#C03030 0%,#7B0C0C 100%);align-items:center}
+    #signup-modal.open,#lock-modal.open{display:flex}
+    .su-field{display:block;font-size:13px;font-weight:600;color:var(--lbl2);margin-bottom:.7rem}
+    .su-field input{display:block;width:100%;margin-top:.3rem;padding:12px 14px;font-size:16px;border:1.5px solid var(--sep2);border-radius:var(--r2);background:var(--bg2);color:var(--lbl);font-family:inherit;outline:none}
+    .su-field input:focus{border-color:var(--accent)}
+    .su-field small{font-weight:400;color:var(--lbl3)}
+    .su-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+    .su-err{min-height:18px;font-size:13px;font-weight:600;color:var(--accent);margin-bottom:.5rem}
+    .su-note{font-size:12px;color:var(--lbl2);line-height:1.5;text-align:center;margin-top:.7rem}
+    .lock-box{width:100%;max-width:320px;text-align:center;color:#fff;padding:1.5rem}
+    .lock-box h2{font-size:22px;margin:.4rem 0 .2rem}
+    .lock-box p{font-size:14px;color:rgba(255,255,255,.75)}
+    .lock-box input{width:100%;margin:1.2rem 0 .4rem;padding:14px;font-size:24px;letter-spacing:.6em;text-align:center;border:none;border-radius:var(--r);font-family:inherit}
+    .lock-err{min-height:20px;font-size:13px;font-weight:600;color:#FFE1E1}
+    .lock-box .disc-ok{background:#fff;color:#7B0C0C;margin-top:.4rem}
+    .lock-forgot{margin-top:1rem;background:none;border:none;color:rgba(255,255,255,.8);font-size:13px;text-decoration:underline;cursor:pointer;font-family:inherit}
+    .profile-row{display:flex;justify-content:space-between;align-items:center;gap:.6rem;margin-bottom:.85rem}
+    .profile-name{font-size:16px;font-weight:700;color:var(--lbl)}
+    .profile-meta{font-size:12px;color:var(--lbl2);margin-top:2px}
     #ob-modal{display:none;position:fixed;inset:0;z-index:7500;background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center;backdrop-filter:blur(8px)}
     #ob-modal.open{display:flex}
     .ob-sheet{background:var(--bg2);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:1.4rem 1.5rem calc(env(safe-area-inset-bottom,24px) + 1.5rem);animation:slideUp .35s cubic-bezier(.34,1.56,.64,1)}
@@ -757,6 +777,37 @@
   </div>
 </div>
 
+<!-- ── SIGN-UP (saved only on this device) ─────────────── -->
+<div id="signup-modal" role="dialog" aria-modal="true" aria-labelledby="su-title">
+  <form class="ob-sheet" onsubmit="event.preventDefault();saveSignup()">
+    <div class="disc-icon">👋</div>
+    <div class="disc-title" id="su-title">Create your profile</div>
+    <p class="ob-hint" style="text-align:center">Your profile stays on this device. Nothing is sent to a server.</p>
+    <label class="su-field">First name<input id="su-name" type="text" maxlength="40" autocomplete="given-name" required></label>
+    <label class="su-field">Email <small>(optional)</small><input id="su-email" type="email" maxlength="80" autocomplete="email"></label>
+    <div class="su-row">
+      <label class="su-field">4-digit PIN <small>(optional)</small><input id="su-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password"></label>
+      <label class="su-field">Confirm PIN<input id="su-pin2" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password"></label>
+    </div>
+    <div class="su-err" id="su-err" role="alert"></div>
+    <button type="submit" class="disc-ok" id="su-submit">Create profile</button>
+    <p class="su-note">A PIN locks the app each time it opens, so others using this phone can't see your health logs.</p>
+  </form>
+</div>
+
+<!-- ── PIN LOCK ──────────────────────────────────────── -->
+<div id="lock-modal" role="dialog" aria-modal="true" aria-label="Enter PIN">
+  <form class="lock-box" onsubmit="event.preventDefault();unlockApp()">
+    <div style="font-size:2.4rem">🔒</div>
+    <h2 id="lock-greeting">Welcome back</h2>
+    <p>Enter your 4-digit PIN</p>
+    <input id="lock-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" aria-label="PIN">
+    <div class="lock-err" id="lock-err" role="alert"></div>
+    <button type="submit" class="disc-ok">Unlock</button>
+    <button type="button" class="lock-forgot" onclick="forgotPin()">Forgot PIN?</button>
+  </form>
+</div>
+
 <!-- ── FIRST-LAUNCH DISCLAIMER MODAL ─────────────────── -->
 <div id="disc-modal" role="dialog" aria-modal="true" aria-label="Medical disclaimer">
   <div class="disc-sheet">
@@ -826,7 +877,7 @@
   <div id="tab-today" class="tp on">
     <div class="hero">
       <div class="hero-in">
-        <div class="hero-eyebrow">CheckedLife · <span id="hero-date"></span></div>
+        <div class="hero-eyebrow"><span id="hero-hello">CheckedLife</span> · <span id="hero-date"></span></div>
         <h1 class="hero-title">Fuel your day.<br><em>Protect your future.</em></h1>
         <div class="hero-sub">A simple daily view of food, movement, and habits that support heart and brain health.</div>
         <div class="calorie-card">
@@ -1215,6 +1266,18 @@
         Generate My Health Report
       </button>
       <div id="report-out" style="display:none"></div>
+
+      <div class="ios-section-hd" style="margin-top:1.2rem">Your profile</div>
+      <div class="ios-card" style="padding:1rem">
+        <div class="profile-row">
+          <div><div class="profile-name" id="profile-name">—</div><div class="profile-meta" id="profile-meta"></div></div>
+        </div>
+        <div class="data-row">
+          <button class="data-btn" onclick="showSignup(true)"><span class="db-icon">✏️</span>Edit profile</button>
+          <button class="data-btn" id="profile-lock-btn" onclick="lockNow()"><span class="db-icon">🔒</span>Lock now</button>
+          <button class="data-btn" id="profile-unpin-btn" onclick="removePin()"><span class="db-icon">🔓</span>Remove PIN</button>
+        </div>
+      </div>
 
       <div class="ios-section-hd" style="margin-top:1.2rem">Data & Privacy</div>
       <div class="ios-card" style="padding:1rem">
@@ -1638,8 +1701,7 @@ function initSplash(){
     const done=()=>{
       if(finished)return;finished=true;
       if(s.parentNode)s.parentNode.removeChild(s);
-      if(!localStorage.getItem('cl_disc_ok'))document.getElementById('disc-modal').classList.add('open');
-      else if(!localStorage.getItem('cl_profile'))setTimeout(showOnboarding,350);
+      nextStartupStep();
     };
     s.addEventListener('transitionend',done,{once:true});
     setTimeout(done,900);
@@ -1648,7 +1710,100 @@ function initSplash(){
 function dismissDisc(){
   localStorage.setItem('cl_disc_ok','1');
   document.getElementById('disc-modal').classList.remove('open');
-  if(!localStorage.getItem('cl_profile')){setTimeout(showOnboarding,350);}
+  nextStartupStep();
+}
+// First launch: disclaimer → sign-up → setup questions. Later launches: PIN lock if one is set.
+function nextStartupStep(){
+  if(!localStorage.getItem('cl_disc_ok'))document.getElementById('disc-modal').classList.add('open');
+  else if(!account)setTimeout(()=>showSignup(false),300);
+  else if(account.pinHash&&!appUnlocked)showLock();
+  else if(!localStorage.getItem('cl_profile'))setTimeout(showOnboarding,350);
+}
+
+// ─── SIGN-UP & PIN (stored only on this device) ────────
+const ACCOUNT_KEY='cl_account';
+let account=readJSON(ACCOUNT_KEY,null);
+if(!account||typeof account!=='object'||typeof account.name!=='string')account=null;
+let appUnlocked=false;
+async function hashPin(pin){
+  const text='checkedlife:'+pin;
+  if(window.crypto?.subtle){
+    const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf),b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  let h=5381;for(const c of text)h=(h*33)^c.charCodeAt(0);
+  return 'djb2-'+(h>>>0).toString(16);
+}
+function showSignup(editing){
+  document.getElementById('su-title').textContent=editing?'Edit your profile':'Create your profile';
+  document.getElementById('su-submit').textContent=editing?'Save changes':'Create profile';
+  document.getElementById('su-name').value=account?.name||'';
+  document.getElementById('su-email').value=account?.email||'';
+  const pinLabel=editing&&account?.pinHash?'To change your PIN, type a new one. Leave it blank to keep your current PIN.':'';
+  document.getElementById('su-pin').placeholder=pinLabel?'••••':'';
+  document.querySelector('.su-note').textContent=pinLabel||"A PIN locks the app each time it opens, so others using this phone can't see your health logs.";
+  ['su-pin','su-pin2'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('su-err').textContent='';
+  document.getElementById('signup-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('su-name').focus(),100);
+}
+async function saveSignup(){
+  const name=document.getElementById('su-name').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const pin=document.getElementById('su-pin').value,pin2=document.getElementById('su-pin2').value;
+  const err=document.getElementById('su-err');
+  if(!name){err.textContent='Please enter your first name.';return;}
+  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='That email doesn\'t look right. Check it or leave it blank.';return;}
+  if(pin&&!/^\d{4}$/.test(pin)){err.textContent='Your PIN must be exactly 4 numbers.';return;}
+  if(pin!==pin2){err.textContent='The two PINs don\'t match.';return;}
+  const editing=Boolean(account);
+  let pinHash=account?.pinHash||'';
+  if(pin)pinHash=await hashPin(pin);
+  account={name,email,pinHash,created:account?.created||Date.now()};
+  try{localStorage.setItem(ACCOUNT_KEY,JSON.stringify(account));}catch{err.textContent='Could not save your profile. Browser storage may be full.';return;}
+  appUnlocked=true;
+  document.getElementById('signup-modal').classList.remove('open');
+  renderAccount();
+  if(!editing)nextStartupStep();
+}
+function showLock(){
+  document.getElementById('lock-greeting').textContent=`Welcome back, ${account.name}`;
+  document.getElementById('lock-pin').value='';
+  document.getElementById('lock-err').textContent='';
+  document.getElementById('lock-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('lock-pin').focus(),100);
+}
+async function unlockApp(){
+  const input=document.getElementById('lock-pin');
+  if(await hashPin(input.value)!==account.pinHash){
+    document.getElementById('lock-err').textContent='Wrong PIN. Try again.';
+    input.value='';input.focus();return;
+  }
+  appUnlocked=true;
+  document.getElementById('lock-modal').classList.remove('open');
+  nextStartupStep();
+}
+function lockNow(){
+  if(!account?.pinHash){alert('Add a PIN first: tap "Edit profile" and choose a 4-digit PIN.');return;}
+  appUnlocked=false;showLock();
+}
+function removePin(){
+  if(!account?.pinHash||!confirm('Remove your PIN? The app will open without asking for it.'))return;
+  account.pinHash='';
+  try{localStorage.setItem(ACCOUNT_KEY,JSON.stringify(account));}catch{}
+  renderAccount();
+}
+function forgotPin(){
+  if(!confirm('Your PIN can\'t be recovered because it is only stored on this device.\n\nTo start over, CheckedLife must erase ALL data on this device (logs, reminders and profile). Continue?'))return;
+  BACKUP_KEYS.concat(['cl_disc_ok','cl_wo',NATIVE_NOTIFY_KEY]).forEach(k=>localStorage.removeItem(k));
+  location.reload();
+}
+function renderAccount(){
+  document.getElementById('hero-hello').textContent=account?`Hi, ${account.name}`:'CheckedLife';
+  document.getElementById('profile-name').textContent=account?.name||'No profile yet';
+  document.getElementById('profile-meta').textContent=account?[account.email||'No email added',account.pinHash?'PIN lock on':'No PIN'].join(' · '):'';
+  document.getElementById('profile-lock-btn').style.opacity=account?.pinHash?'1':'.5';
+  document.getElementById('profile-unpin-btn').style.display=account?.pinHash?'':'none';
 }
 
 // ─── ONBOARDING ─────────────────────────────────────────
@@ -1699,8 +1854,8 @@ function skipOnboarding(){
 }
 
 // ─── DATA PORTABILITY ───────────────────────────────────
-const BACKUP_KEYS=['cl_food','cl_n','cl_chk','cl_water','cl_date','cl_nut_hist','cl_wo_hist','cl_day_hist','cl_profile',WEIGHT_KEY,CAL_GOAL_KEY,MED_PLAN_KEY,MED_LOG_KEY,PPG_HISTORY_KEY,LABEL_THRESHOLD_KEY];
-const JSON_SHAPES={cl_food:'array',cl_n:'object',cl_chk:'object',cl_nut_hist:'array',cl_wo_hist:'array',cl_day_hist:'array',cl_profile:'object'};
+const BACKUP_KEYS=['cl_account','cl_food','cl_n','cl_chk','cl_water','cl_date','cl_nut_hist','cl_wo_hist','cl_day_hist','cl_profile',WEIGHT_KEY,CAL_GOAL_KEY,MED_PLAN_KEY,MED_LOG_KEY,PPG_HISTORY_KEY,LABEL_THRESHOLD_KEY];
+const JSON_SHAPES={cl_account:'object',cl_food:'array',cl_n:'object',cl_chk:'object',cl_nut_hist:'array',cl_wo_hist:'array',cl_day_hist:'array',cl_profile:'object'};
 JSON_SHAPES[MED_PLAN_KEY]='array';JSON_SHAPES[MED_LOG_KEY]='array';JSON_SHAPES[PPG_HISTORY_KEY]='array';
 async function exportData(){
   const data={};BACKUP_KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!=null)data[k]=v;});
@@ -3288,7 +3443,7 @@ function showStat(msg,err){
 ['cl_coach_history','cl_coach_share','cl_coach_user_key'].forEach(k=>{try{localStorage.removeItem(k);}catch{}});
 loadData();
 document.getElementById('hero-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-renderWaterTag();
+renderWaterTag();renderAccount();
 buildStreak();buildChecklist();buildTips();buildFast();buildWtGrid();buildQuiz(0);
 renderFoodLog();renderNutBars();renderCalorieTracker();renderWoHist();runDiseaseAI();updateTodaySummary();updateReminders();
   document.getElementById('label-sodium-threshold').value=labelSodiumThreshold;
