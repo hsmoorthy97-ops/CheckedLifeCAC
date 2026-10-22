@@ -524,6 +524,14 @@
     .nf-li{display:flex;align-items:center;gap:3px;font-size:10px;color:var(--lbl2)}
     /* Photo results */
     .ph-res{padding:0 1rem .5rem}
+    .ph-guess{padding:.8rem 1rem .2rem}
+    .ph-guess-t{font-size:15px;font-weight:700;color:var(--lbl);margin-bottom:.2rem}
+    .ph-guess-s{font-size:12px;color:var(--lbl2);margin-bottom:.65rem;line-height:1.45}
+    .ph-guess-list{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.7rem}
+    .ph-guess-btn{display:flex;justify-content:space-between;align-items:center;width:100%;padding:.75rem .9rem;border:1.5px solid var(--sep2);border-radius:var(--r2);background:var(--bg2);font-size:15px;font-weight:600;color:var(--lbl);cursor:pointer;font-family:inherit;text-align:left}
+    .ph-guess-btn:active{background:var(--fill2)}
+    .ph-guess-btn span{font-size:12px;font-weight:500;color:var(--lbl2)}
+    .ph-guess-err{font-size:13px;font-weight:600;color:var(--accent);min-height:16px;margin:.4rem 0}
     .ph-res-t{font-size:12px;font-weight:700;color:var(--lbl2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.45rem}
     .ph-opt{display:flex;align-items:center;gap:9px;padding:.6rem .7rem;border-radius:var(--r2);border:1.5px solid var(--sep2);margin-bottom:.35rem;cursor:pointer;transition:all .15s;background:var(--bg2)}
     .ph-opt.sel,.ph-opt:hover{border-color:var(--green);background:var(--green-l)}
@@ -1346,6 +1354,19 @@
           <div id="ai-confidence-label" style="font-size:10px;color:rgba(255,255,255,.4);margin-top:1px"></div>
         </div>
       </div>
+    </div>
+
+    <!-- Photo guesses: pick the right food or type it -->
+    <div id="photo-guess-wrap" class="ph-guess" style="display:none">
+      <div class="ph-guess-t" id="ph-guess-title">What food is this?</div>
+      <div class="ph-guess-s" id="ph-guess-sub">Tap the closest match, or type the food's name.</div>
+      <div class="ph-guess-list" id="ph-guess-list"></div>
+      <form class="manual-row" onsubmit="event.preventDefault();pickPhotoGuess(document.getElementById('ph-guess-input').value)">
+        <input class="manual-in" id="ph-guess-input" type="text" maxlength="60" placeholder="Type the food, e.g. chicken salad" aria-label="Food name">
+        <button class="manual-btn search" type="submit">Search</button>
+      </form>
+      <div class="ph-guess-err" id="ph-guess-err" role="status"></div>
+      <div class="pm-actions" style="padding-left:0;padding-right:0"><button class="pm-deny" type="button" onclick="closeProductModal()">Cancel</button><button class="pm-conf" type="button" onclick="retakePhoto()">Retake photo</button></div>
     </div>
 
     <!-- Standard header (barcode mode) -->
@@ -2368,6 +2389,7 @@ async function searchFoodByName(){
     document.getElementById('ai-food-label').textContent=q+' (text search)';
     document.getElementById('ai-confidence-label').textContent='USDA FoodData Central · '+foods.length+' matches found';
     document.getElementById('photo-results-wrap').style.display='none';
+    document.getElementById('photo-guess-wrap').style.display='none';
     document.getElementById('nf-wrap').style.display='block';
     document.getElementById('pm-q').textContent='Is this the right food?';
     document.getElementById('alt-btn').style.display=pendingPhotoAlts.length>1?'block':'none';
@@ -2424,22 +2446,38 @@ const FOOD_MAP={
   'apple':'apple raw with skin','mango':'mango raw','watermelon':'watermelon raw',
   'blueberry':'blueberries raw','raspberry':'raspberries raw','grape':'grapes red raw',
   'peach':'peach raw','pear':'pear raw','cherry':'cherries raw',
+  'cabbage':'cabbage raw','acorn squash':'squash winter acorn baked','butternut squash':'squash winter butternut baked',
+  'mashed potato':'potatoes mashed','french loaf':'bread french','potpie':'chicken pot pie',
+  'consomme':'soup chicken broth','hot pot':'soup beef vegetable','trifle':'pudding vanilla',
+  'ice lolly':'ice pops','custard apple':'cherimoya raw','cardoon':'cardoon raw','red wine':'wine red',
+  'chocolate sauce':'chocolate syrup','dough':'bread dough',
 };
+// Keep only predictions that are foods; one guess per food, best score first
+const FOOD_KEYS=Object.keys(FOOD_MAP).sort((a,b)=>b.length-a.length); // "custard apple" before "apple"
+const NON_FOOD=/\b(mug|cup|teapot|coffeepot|bottle|jug|pitcher|espresso maker|plate|tray|menu)\b/;
 function extractFoodTerms(preds){
-  const results=[];
-  const nonFood=/\b(mug|cup|teapot|coffeepot|bottle|jug|pitcher|espresso maker)\b/;
+  const seen=new Map();
   for(const pred of preds){
     const cls=pred.className.toLowerCase();
-    if(nonFood.test(cls))continue;
-    let matched=null,matchKey='';
-    for(const [key,val] of Object.entries(FOOD_MAP)){
+    if(NON_FOOD.test(cls))continue;
+    for(const key of FOOD_KEYS){
+      const term=FOOD_MAP[key];
       const re=new RegExp('\\b'+key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b');
-      if(re.test(cls)){matched=val;matchKey=key;break;}
+      if(re.test(cls)){
+        if(!seen.has(key))seen.set(key,{term,displayName:toTitleCase(key),confidence:pred.probability});
+        break;
+      }
     }
-    if(matched){results.push({term:matched,displayName:toTitleCase(matchKey),confidence:pred.probability});}
-    else{const raw=cls.split(',')[0].trim();results.push({term:raw,displayName:toTitleCase(raw),confidence:pred.probability,raw:true});}
   }
-  return results;
+  return [...seen.values()].sort((a,b)=>b.confidence-a.confidence);
+}
+// MobileNet expects a square image; crop the centre instead of squashing the photo
+function centerSquare(img,size=224){
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=size;
+  const side=Math.min(img.naturalWidth||img.width,img.naturalHeight||img.height);
+  const sx=((img.naturalWidth||img.width)-side)/2,sy=((img.naturalHeight||img.height)-side)/2;
+  canvas.getContext('2d').drawImage(img,sx,sy,side,side,0,0,size,size);
+  return canvas;
 }
 function toTitleCase(s){return s.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');}
 async function searchUSDA(query){
@@ -2465,44 +2503,73 @@ function usdaToItem(food){
 }
 let pendingPhotoAlts=[],photoAltIdx=0,capturedPhotoURL=null;
 function openPhotoScan(){document.getElementById('photo-input').click();}
+let photoGuesses=[];
 async function handlePhoto(input){
   if(!input.files?.[0])return;
   const file=input.files[0];input.value='';
+  if(capturedPhotoURL)URL.revokeObjectURL(capturedPhotoURL);
   capturedPhotoURL=URL.createObjectURL(file);
   showLoad(true,'Analyzing photo…');showStat('');
+  let guesses=[];
   try{
     if(!window.tf)await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js');
     if(!window.mobilenet)await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js');
-    if(!tfModel){document.getElementById('ld-msg').textContent='Loading AI model (first time only)…';tfModel=await window.mobilenet.load();}
+    if(!tfModel){document.getElementById('ld-msg').textContent='Loading food recognizer (first time only)…';tfModel=await window.mobilenet.load({version:2,alpha:1.0});}
     document.getElementById('ld-msg').textContent='Identifying food in photo…';
     const img=await fileToImg(file);
-    const preds=await tfModel.classify(img,8);
-    const foodTerms=extractFoodTerms(preds);
-    document.getElementById('ld-msg').textContent='Looking up nutrition data…';
-    let usdaResults=[],bestTerm=foodTerms[0];
-    for(const term of foodTerms.slice(0,4)){
-      let found=[];
-      try{found=await searchUSDA(term.term);}catch{}
-      if(found.length>usdaResults.length){usdaResults=found;bestTerm=term;}
-      if(usdaResults.length>=2)break;
+    guesses=extractFoodTerms(await tfModel.classify(centerSquare(img),20)).slice(0,4);
+  }catch(e){console.warn('Photo recognition failed',e);}
+  finally{showLoad(false);}
+  showPhotoGuesses(guesses);
+}
+// Step 1 of a photo scan: show the model's food guesses and a box to type the food instead
+function showPhotoGuesses(guesses){
+  photoGuesses=guesses;
+  document.getElementById('photo-preview').src=capturedPhotoURL||'';
+  document.getElementById('photo-preview').style.display=capturedPhotoURL?'block':'none';
+  document.getElementById('photo-header-wrap').style.display='block';
+  document.getElementById('ai-food-label').textContent=guesses.length?'Possible matches below':'No food recognized';
+  document.getElementById('ai-confidence-label').textContent='Photo guesses are estimates · always check';
+  ['pm-head-row','photo-results-wrap','nf-wrap'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('photo-guess-wrap').style.display='block';
+  document.getElementById('ph-guess-title').textContent=guesses.length?'What food is this?':"We couldn't recognize this food";
+  document.getElementById('ph-guess-sub').textContent=guesses.length?"Tap the closest match. If none are right, type the food's name.":"The recognizer knows a limited set of foods. Type the name and we'll find its nutrition.";
+  document.getElementById('ph-guess-list').innerHTML=guesses.map((g,i)=>`<button type="button" class="ph-guess-btn" onclick="pickPhotoGuess(photoGuesses[${i}].term,photoGuesses[${i}].displayName)">${esc(g.displayName)}<span>${Math.round(g.confidence*100)}% match</span></button>`).join('');
+  document.getElementById('ph-guess-input').value='';
+  document.getElementById('ph-guess-err').textContent='';
+  document.getElementById('product-modal').classList.add('open');
+  if(!guesses.length)setTimeout(()=>document.getElementById('ph-guess-input').focus(),150);
+}
+// Step 2: look up nutrition for the chosen or typed food
+async function pickPhotoGuess(term,displayName){
+  term=String(term||'').trim();
+  const err=document.getElementById('ph-guess-err');
+  if(!term){err.textContent="Type the food's name first.";return;}
+  err.textContent='';
+  showLoad(true,'Looking up nutrition data…');
+  try{
+    let found=[];
+    try{found=await searchUSDA(term);}catch{}
+    if(found.length){
+      pendingPhotoAlts=found.map(usdaToItem);photoAltIdx=0;
+      document.getElementById('photo-guess-wrap').style.display='none';
+      showUSDAPhotoResult({displayName:displayName||toTitleCase(term)});
+      return;
     }
-    if(usdaResults.length){
-      pendingPhotoAlts=usdaResults.map(usdaToItem);
-      photoAltIdx=0;
-      showUSDAPhotoResult(bestTerm,bestTerm?.confidence??preds[0].probability);
-    } else {
-      // fallback: Open Food Facts text search
-      document.getElementById('ld-msg').textContent='Searching food database…';
-      const search=async q=>{const r=await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&json=1&page_size=5&fields=product_name,brands,serving_size,nutriments,image_small_url`);const d=await r.json();return(d.products||[]).filter(p=>p.product_name&&p.nutriments);};
-      let prods=[];
-      for(const t of foodTerms.slice(0,3)){prods=await search(t.term);if(prods.length)break;}
-      if(prods.length){showPhotoResults(prods,foodTerms[0]?.displayName||'food');return;}
-      showStat('Could not identify this food. Try a closer or clearer photo, or scan the barcode.',true);
-    }
-  }catch(e){console.error(e);showStat('Photo analysis failed. Try a clear, well-lit photo of the food.',true);}
+    const r=await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(term)}&json=1&page_size=5&fields=product_name,brands,serving_size,serving_quantity,nutriments,image_small_url`);
+    const prods=((await r.json()).products||[]).filter(p=>p.product_name&&p.nutriments);
+    if(prods.length){document.getElementById('photo-guess-wrap').style.display='none';showPhotoResults(prods,displayName||term);return;}
+    err.textContent=`No nutrition data found for "${term}". Try a simpler name, like "apple" or "rice".`;
+  }catch{err.textContent='Could not reach the food database. Check your connection and try again.';}
   finally{showLoad(false);}
 }
-function showUSDAPhotoResult(foodTerm,confidence){
+function retakePhoto(){closeProductModal(true);openPhotoScan();}
+function backToGuesses(){
+  document.getElementById('nf-wrap').style.display='none';
+  document.getElementById('photo-results-wrap').style.display='none';
+  showPhotoGuesses(photoGuesses);
+}
+function showUSDAPhotoResult(foodTerm){
   const item=pendingPhotoAlts[photoAltIdx];
   // Photo header
   document.getElementById('photo-preview').style.display='block';
@@ -2510,8 +2577,7 @@ function showUSDAPhotoResult(foodTerm,confidence){
   document.getElementById('photo-header-wrap').style.display='block';
   document.getElementById('pm-head-row').style.display='none';
   document.getElementById('ai-food-label').textContent=foodTerm?.displayName||item.name;
-  const confPct=Math.round((confidence||0.5)*100);
-  document.getElementById('ai-confidence-label').textContent=confPct+'% model score · possible database match; review serving & nutrition';
+  document.getElementById('ai-confidence-label').textContent='Closest database match · review serving & nutrition';
   // NF section
   document.getElementById('photo-results-wrap').style.display='none';
   document.getElementById('nf-wrap').style.display='block';
@@ -2528,7 +2594,8 @@ function showUSDAPhotoResult(foodTerm,confidence){
   // Populate NF panel
   renderNFPanel(item);
   pendingProduct=item;
-  document.getElementById('pm-deny-btn').textContent='Cancel';
+  document.getElementById('pm-deny-btn').textContent=capturedPhotoURL?'← Back':'Cancel';
+  document.getElementById('pm-deny-btn').onclick=capturedPhotoURL?backToGuesses:closeProductModal;
   document.getElementById('pm-conf-btn').textContent='Add to log ✓';
   document.getElementById('pm-conf-btn').onclick=confirmProduct;
   document.getElementById('product-modal').classList.add('open');
@@ -2561,8 +2628,9 @@ function showPhotoResults(prods,query){
   document.getElementById('photo-header-wrap').style.display='none';
   document.getElementById('pm-head-row').style.display='flex';
   document.getElementById('photo-results-wrap').style.display='block';
+  document.getElementById('photo-guess-wrap').style.display='none';
   document.getElementById('nf-wrap').style.display='none';
-  document.getElementById('pm-name').textContent='Identified: "'+query+'"';
+  document.getElementById('pm-name').textContent='Results for "'+query+'"';
   document.getElementById('pm-brand').textContent='Select the closest match below';
   document.getElementById('pm-sv').textContent='';document.getElementById('pm-img').textContent='📷';
   const list=document.getElementById('ph-list');list.innerHTML='';
@@ -2770,6 +2838,8 @@ function showBarcodeConfirm(product,source='barcode'){
   document.getElementById('alt-list').style.display='none';
   document.getElementById('pm-q').textContent=source==='photo'?'Review this closest food match and its nutrition?':'Is this the item you scanned?';
   document.getElementById('pm-deny-btn').textContent='Not this item';
+  document.getElementById('pm-deny-btn').onclick=closeProductModal;
+  document.getElementById('photo-guess-wrap').style.display='none';
   document.getElementById('pm-conf-btn').textContent='Yes, add it ✓';
   document.getElementById('pm-conf-btn').onclick=confirmProduct;
   const imgEl=document.getElementById('pm-img');
@@ -2799,9 +2869,11 @@ function makeItem(product,g,hasS,n){
   };
 }
 
-function closeProductModal(){
+function closeProductModal(keepMeal=false){
   document.getElementById('product-modal').classList.remove('open');
-  pendingProduct=null;pendingPhotoProd=[];pendingPhotoAlts=[];pendingMeal=null;
+  pendingProduct=null;pendingPhotoProd=[];pendingPhotoAlts=[];photoGuesses=[];
+  if(keepMeal!==true)pendingMeal=null;
+  document.getElementById('photo-guess-wrap').style.display='none';
   document.getElementById('photo-header-wrap').style.display='none';
   document.getElementById('pm-head-row').style.display='flex';
   document.getElementById('alt-btn').style.display='none';
