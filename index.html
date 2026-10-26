@@ -457,8 +457,10 @@
     .fast-camera-panel{margin:.65rem .85rem .8rem;padding:.75rem;background:var(--bg3);border:1px solid var(--sep2);border-radius:10px}
     .fast-camera-copy{font-size:11px;color:var(--lbl2);line-height:1.55;margin-bottom:.55rem}
     .fast-camera-copy strong{display:block;font-size:12px;color:var(--lbl);margin-bottom:2px}
-    .fast-camera-video{display:none;width:100%;max-height:250px;aspect-ratio:4/3;object-fit:cover;border-radius:9px;background:#111;transform:scaleX(-1)}
-    .fast-camera-video.active{display:block}
+    .fast-camera-stage{position:relative;display:none;width:100%;aspect-ratio:3/4;max-height:340px;border-radius:9px;overflow:hidden;background:#111}
+    .fast-camera-stage.active{display:block}
+    .fast-camera-video{display:block;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+    .fast-face-dots{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
     .fast-camera-actions{display:flex;gap:.5rem;margin-top:.55rem}
     .fast-camera-actions button{flex:1;min-height:44px;padding:9px;border:1px solid var(--sep2);border-radius:9px;background:var(--bg2);color:var(--lbl);font:600 12px -apple-system,sans-serif;cursor:pointer}
     .fast-camera-actions button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -469,7 +471,8 @@
     .fast-check-copy span{display:block;font-size:11px;color:var(--lbl2);line-height:1.45;margin-top:2px}
     .fast-check-actions{display:flex;gap:4px}
     .fast-check-actions button{border:1px solid var(--sep2);border-radius:8px;background:var(--bg2);color:var(--lbl2);padding:8px;min-width:64px;min-height:44px;font:600 11px -apple-system,sans-serif;cursor:pointer}
-    .fast-check-actions button.concern{color:var(--accent-d);border-color:rgba(255,59,48,.3);background:var(--accent-l)}
+    .fast-check-actions button.concern{min-width:96px;color:var(--accent-d);border-color:rgba(255,59,48,.35);background:var(--bg2);transition:background .15s,color .15s}
+    .fast-check-actions button.concern[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
     .fast-urgent{display:none;margin:.65rem .85rem;padding:.8rem;border:1px solid rgba(255,59,48,.35);border-radius:10px;background:var(--accent-l);color:#991B1B;font-size:13px;line-height:1.5}
     .fast-urgent.show{display:block}
     .fast-urgent a{display:flex;justify-content:center;margin-top:.55rem;padding:10px;border-radius:9px;background:var(--accent);color:white;font-weight:700;text-decoration:none}
@@ -1218,10 +1221,13 @@
       <div class="ios-card" style="margin-bottom:.5rem;border:.5px solid rgba(255,59,48,.2)"><div id="fast-cards"></div></div>
       <div class="ios-section-hd" style="margin-top:.8rem">Guided FAST check</div>
       <div class="ios-card">
-        <p class="fast-check-intro">If symptoms started suddenly, call 911 now—do not wait to finish this guide. Check for face drooping, arm weakness, or unusual speech. If you see a change or are unsure, use the emergency button below.</p>
+        <p class="fast-check-intro">If symptoms started suddenly, call 911 now—do not wait to finish this guide. Check for face drooping, arm weakness, or unusual speech, and tap <strong>Concern</strong> for anything that seems off. If you are unsure, treat it as a concern.</p>
         <div class="fast-camera-panel">
-          <p class="fast-camera-copy"><strong>Optional camera mirror—not a stroke test</strong>Use the live mirror only to view your face while smiling. This app does not analyze facial movement, expressions, or skin color, and a normal-looking image cannot rule out a stroke. Do not delay emergency care to use the camera.</p>
-          <video id="fast-face-video" class="fast-camera-video" playsinline autoplay muted aria-label="Live mirrored camera preview; not recorded"></video>
+          <p class="fast-camera-copy"><strong>Optional camera mirror—not a stroke test</strong>Smile at the camera. Dots and guide lines across your face help you compare the left and right sides, like whether your mouth line stays level. The app does not decide whether your face looks normal, and a normal-looking face cannot rule out a stroke. Do not delay emergency care to use the camera.</p>
+          <div class="fast-camera-stage" id="fast-camera-stage">
+            <video id="fast-face-video" class="fast-camera-video" playsinline autoplay muted aria-label="Live mirrored camera preview; not recorded"></video>
+            <canvas id="fast-face-dots" class="fast-face-dots" aria-hidden="true"></canvas>
+          </div>
           <div class="fast-camera-actions">
             <button type="button" class="primary" id="fast-camera-start" onclick="startFastCamera()">Turn on camera mirror</button>
             <button type="button" id="fast-camera-stop" onclick="stopFastCamera()" hidden>Turn off camera</button>
@@ -1231,15 +1237,15 @@
         <div id="fast-check-list" role="group" aria-label="Manual Face, Arms, Speech check">
         <div class="fast-check-row">
           <div class="fast-check-copy"><strong>Face</strong><span>Ask them to smile. Does one side droop or feel numb?</span></div>
-          <div class="fast-check-actions"><button type="button" class="concern" onclick="flagFastConcern('Face')">Concern</button><button type="button" onclick="flagFastConcern('Face — unsure')">Unsure</button></div>
+          <div class="fast-check-actions"><button type="button" class="concern" aria-pressed="false" data-part="Face" onclick="toggleFastConcern(this)">Concern</button></div>
         </div>
         <div class="fast-check-row">
           <div class="fast-check-copy"><strong>Arms</strong><span>Ask them to raise both arms. Does one drift down or feel weak?</span></div>
-          <div class="fast-check-actions"><button type="button" class="concern" onclick="flagFastConcern('Arms')">Concern</button><button type="button" onclick="flagFastConcern('Arms — unsure')">Unsure</button></div>
+          <div class="fast-check-actions"><button type="button" class="concern" aria-pressed="false" data-part="Arms" onclick="toggleFastConcern(this)">Concern</button></div>
         </div>
         <div class="fast-check-row">
           <div class="fast-check-copy"><strong>Speech</strong><span>Ask them to repeat “Today is a sunny day.” Is speech new, slurred, or hard to understand?</span></div>
-          <div class="fast-check-actions"><button type="button" class="concern" onclick="flagFastConcern('Speech')">Concern</button><button type="button" onclick="flagFastConcern('Speech — unsure')">Unsure</button></div>
+          <div class="fast-check-actions"><button type="button" class="concern" aria-pressed="false" data-part="Speech" onclick="toggleFastConcern(this)">Concern</button></div>
         </div>
         </div>
         <div id="fast-urgent" class="fast-urgent" role="alert" aria-live="assertive">
@@ -1247,7 +1253,7 @@
           <a href="tel:911">Call 911 now</a>
         </div>
       </div>
-      <p class="disc">The camera is an optional live mirror only; it does not record or analyze your face. No camera result can rule out a stroke. Sudden symptoms or uncertainty need emergency care.</p>
+      <p class="disc">The camera mirror runs only on this device; it does not record or save your face. Its dots are a visual guide, not a test. No camera result can rule out a stroke. Sudden symptoms or uncertainty need emergency care.</p>
       <div class="also-box"><h5>Also watch for</h5><ul><li>Sudden severe headache with no known cause</li><li>Sudden numbness or weakness, especially on one side of the body</li><li>Sudden confusion or trouble understanding speech</li><li>Sudden trouble walking or dizziness</li></ul></div>
       <a href="tel:911" class="call-911">📞 Call 911 (US) · or your local emergency number</a>
       <p class="disc" style="margin-top:.75rem">This app does not replace medical advice. Always consult your doctor about your personal stroke risk.</p>
@@ -1292,7 +1298,7 @@
 
       <div class="ios-section-hd" style="margin-top:1.2rem">Data & Privacy</div>
       <div class="ios-card" style="padding:1rem">
-         <p style="font-size:13px;color:var(--lbl2);line-height:1.6;margin-bottom:.85rem">Health logs and pulse summaries are stored in this browser. The FAST camera is a live mirror only; it does not analyze or save face images or video. Nutrition-label photos are processed locally and not retained. Barcode and food-search requests go to Open Food Facts and USDA FoodData Central. The barcode scanner, photo-recognition and OCR libraries load from public CDNs (unpkg, jsDelivr) the first time you use them, and fonts load from Google Fonts; photos themselves stay in this browser. Export a backup or clear everything below.</p>
+         <p style="font-size:13px;color:var(--lbl2);line-height:1.6;margin-bottom:.85rem">Health logs and pulse summaries are stored in this browser. The FAST camera mirror tracks face points on this device to draw guide dots; it never saves or uploads face images or video. Nutrition-label photos are processed locally and not retained. Barcode and food-search requests go to Open Food Facts and USDA FoodData Central. The barcode scanner, photo-recognition and OCR libraries load from public CDNs (unpkg, jsDelivr) the first time you use them, and fonts load from Google Fonts; photos themselves stay in this browser. Export a backup or clear everything below.</p>
         <div class="data-row">
           <button class="data-btn" onclick="exportData()"><span class="db-icon">⬇️</span>Export</button>
           <button class="data-btn" onclick="importDataClick()"><span class="db-icon">⬆️</span>Import</button>
@@ -2216,16 +2222,95 @@ function updateTodaySummary(){
 // ─── TIPS & FAST ───────────────────────────────────────
 function buildTips(){const g=document.getElementById('tip-grid');TIPS.forEach(t=>{const c=document.createElement('div');c.className='tip-c';c.innerHTML=`<div class="tip-icon">${t.icon}</div><h4>${t.title}</h4><p>${t.text}</p>`;g.appendChild(c);});}
 function buildFast(){const el=document.getElementById('fast-cards');FAST.forEach(f=>{const row=document.createElement('div');row.className='fast-row';row.innerHTML=`<div class="fast-ltr" style="background:${f.bg};color:${f.fg}">${f.letter}</div><div><div class="fast-tt" style="color:${f.fg}">${f.word}</div><div class="fast-dd">${f.desc}</div></div>`;el.appendChild(row);});}
-function flagFastConcern(label){
+function toggleFastConcern(btn){
+  const on=btn.getAttribute('aria-pressed')!=='true';
+  btn.setAttribute('aria-pressed',String(on));
+  btn.textContent=on?'✓ Concern':'Concern';
+  const flagged=[...document.querySelectorAll('#fast-check-list .concern[aria-pressed="true"]')].map(b=>b.dataset.part);
   const alert=document.getElementById('fast-urgent');
-  alert.classList.add('show');
-  alert.querySelector('strong').textContent=`${label}: possible sudden change. Call 911 now.`;
-  alert.scrollIntoView({behavior:'smooth',block:'center'});
-  alert.querySelector('a').focus({preventScroll:true});
+  alert.classList.toggle('show',flagged.length>0);
+  if(!flagged.length)return;
+  alert.querySelector('strong').textContent=`Concern noted: ${flagged.join(', ')}. Call 911 now.`;
+  if(on){
+    alert.scrollIntoView({behavior:'smooth',block:'center'});
+    alert.querySelector('a').focus({preventScroll:true});
+  }
 }
 let fastCameraStream=null,fastCameraRequestId=0;
+// Face guide dots: Google's MediaPipe Face Landmarker finds 478 points on the face,
+// on this device. We only draw them; the app never judges whether a face looks normal.
+const MEDIAPIPE_CDN='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.1/';
+const FACE_MODEL_URL='models/face/face_landmarker.task';
+let faceLandmarker=null,faceLandmarkerLoading=null,faceDotsFrame=0,faceDotsLastTime=-1;
+async function loadFaceLandmarker(){
+  if(faceLandmarker)return faceLandmarker;
+  if(!faceLandmarkerLoading)faceLandmarkerLoading=(async()=>{
+    const vision=await import(MEDIAPIPE_CDN+'vision_bundle.mjs');
+    const fileset=await vision.FilesetResolver.forVisionTasks(MEDIAPIPE_CDN+'wasm');
+    const options=delegate=>({baseOptions:{modelAssetPath:FACE_MODEL_URL,delegate},runningMode:'VIDEO',numFaces:1});
+    try{faceLandmarker=await vision.FaceLandmarker.createFromOptions(fileset,options('GPU'));}
+    catch{faceLandmarker=await vision.FaceLandmarker.createFromOptions(fileset,options('CPU'));}
+    return faceLandmarker;
+  })().catch(e=>{faceLandmarkerLoading=null;throw e;});
+  return faceLandmarkerLoading;
+}
+function stopFaceDots(){
+  cancelAnimationFrame(faceDotsFrame);faceDotsFrame=0;faceDotsLastTime=-1;
+  const canvas=document.getElementById('fast-face-dots');
+  if(canvas)canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+// Landmark indices: forehead 10, chin 152, eye outer corners 33/263, mouth corners 61/291
+function drawFaceDots(canvas,video,points){
+  const dpr=window.devicePixelRatio||1,w=canvas.clientWidth,h=canvas.clientHeight;
+  if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  if(!points)return;
+  // Match the video's object-fit:cover crop and mirror it like the preview
+  const scale=Math.max(w/video.videoWidth,h/video.videoHeight);
+  const ox=(w-video.videoWidth*scale)/2,oy=(h-video.videoHeight*scale)/2;
+  const at=i=>({x:w-(ox+points[i].x*video.videoWidth*scale),y:oy+points[i].y*video.videoHeight*scale});
+  ctx.fillStyle='rgba(120,230,255,.85)';ctx.shadowColor='rgba(90,200,250,.9)';ctx.shadowBlur=4;
+  for(let i=0;i<points.length;i+=2){const p=at(i);ctx.beginPath();ctx.arc(p.x,p.y,1.3,0,Math.PI*2);ctx.fill();}
+  ctx.shadowBlur=0;ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.9)';
+  const line=(a,b,dash)=>{const p=at(a),q=at(b);ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();};
+  line(10,152,[5,5]);   // centre line
+  line(33,263);         // eye line
+  line(61,291);         // mouth line
+  ctx.setLineDash([]);
+  ctx.fillStyle='#fff';
+  [33,263,61,291].forEach(i=>{const p=at(i);ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();});
+}
+async function startFaceDots(requestId){
+  const status=document.getElementById('fast-camera-status');
+  const video=document.getElementById('fast-face-video'),canvas=document.getElementById('fast-face-dots');
+  try{
+    status.textContent='Loading face guide dots…';
+    await loadFaceLandmarker();
+  }catch(e){
+    console.warn('Face dots unavailable',e);
+    if(requestId===fastCameraRequestId)status.textContent='Face guide dots could not load, so the plain mirror is shown. A normal-looking face cannot rule out a stroke.';
+    return;
+  }
+  if(requestId!==fastCameraRequestId)return;
+  status.textContent='Smile and compare the eye and mouth lines on both sides. This is a visual guide only; it cannot rule out a stroke.';
+  const tick=()=>{
+    if(requestId!==fastCameraRequestId||!fastCameraStream)return;
+    if(video.readyState>=2&&video.currentTime!==faceDotsLastTime){
+      faceDotsLastTime=video.currentTime;
+      try{
+        const result=faceLandmarker.detectForVideo(video,performance.now());
+        drawFaceDots(canvas,video,result.faceLandmarks?.[0]);
+      }catch(e){console.warn('Face tracking stopped',e);stopFaceDots();return;}
+    }
+    faceDotsFrame=requestAnimationFrame(tick);
+  };
+  faceDotsFrame=requestAnimationFrame(tick);
+}
 function stopFastCamera(){
   fastCameraRequestId++;
+  stopFaceDots();
+  document.getElementById('fast-camera-stage')?.classList.remove('active');
   if(fastCameraStream){fastCameraStream.getTracks().forEach(track=>track.stop());fastCameraStream=null;}
   const video=document.getElementById('fast-face-video');
   if(video){video.pause();video.srcObject=null;video.classList.remove('active');}
@@ -2257,23 +2342,24 @@ async function startFastCamera(){
       return;
     }
     fastCameraStream=requestedStream;
-    video.srcObject=requestedStream;video.classList.add('active');
+    video.srcObject=requestedStream;document.getElementById('fast-camera-stage').classList.add('active');
     await video.play();
     if(requestId!==fastCameraRequestId||!document.getElementById('tab-fast').classList.contains('on')){
       requestedStream.getTracks().forEach(track=>track.stop());
       if(fastCameraStream===requestedStream)fastCameraStream=null;
       if(video.srcObject===requestedStream)video.srcObject=null;
-      video.classList.remove('active');
+      document.getElementById('fast-camera-stage').classList.remove('active');
       return;
     }
     start.disabled=true;start.textContent='Camera mirror is on';
     stop.hidden=false;
-    status.textContent='Live mirror only. No face analysis, recording, or saved images. A normal-looking face cannot rule out a stroke.';
+    status.textContent='Live mirror on. Nothing is recorded or saved. A normal-looking face cannot rule out a stroke.';
+    startFaceDots(requestId);
   }catch(error){
     if(requestedStream)requestedStream.getTracks().forEach(track=>track.stop());
     if(fastCameraStream===requestedStream)fastCameraStream=null;
     if(video.srcObject===requestedStream)video.srcObject=null;
-    video.classList.remove('active');
+    document.getElementById('fast-camera-stage').classList.remove('active');
     if(requestId!==fastCameraRequestId)return;
     start.disabled=false;start.textContent='Turn on camera mirror';
     stop.hidden=true;
