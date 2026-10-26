@@ -2776,7 +2776,7 @@ async function searchFoodByName(){
     document.getElementById('pm-brand').textContent=item.brand;
     document.getElementById('pm-sv').textContent=item.servingNote;
     renderNFPanel(item);pendingProduct=item;
-    document.getElementById('pm-conf-btn').textContent='Add to log ✓';
+    document.getElementById('pm-conf-btn').textContent='Add to log';
     document.getElementById('pm-conf-btn').onclick=confirmProduct;
     document.getElementById('pm-deny-btn').textContent='Cancel';
     document.getElementById('pm-deny-btn').onclick=closeProductModal;
@@ -3087,7 +3087,7 @@ function showUSDAPhotoResult(foodTerm){
   pendingProduct=item;
   document.getElementById('pm-deny-btn').textContent=capturedPhotoURL?'← Back':'Cancel';
   document.getElementById('pm-deny-btn').onclick=capturedPhotoURL?backToGuesses:closeProductModal;
-  document.getElementById('pm-conf-btn').textContent='Add to log ✓';
+  document.getElementById('pm-conf-btn').textContent='Add to log';
   document.getElementById('pm-conf-btn').onclick=confirmProduct;
   document.getElementById('product-modal').classList.add('open');
 }
@@ -3332,7 +3332,7 @@ function showBarcodeConfirm(product,source='barcode'){
   document.getElementById('pm-deny-btn').textContent='Not this item';
   document.getElementById('pm-deny-btn').onclick=closeProductModal;
   document.getElementById('photo-guess-wrap').style.display='none';
-  document.getElementById('pm-conf-btn').textContent='Yes, add it ✓';
+  document.getElementById('pm-conf-btn').textContent='Yes, add it';
   document.getElementById('pm-conf-btn').onclick=confirmProduct;
   const imgEl=document.getElementById('pm-img');
   const img=safeUrl(product.image_url||product.image_small_url||'');
@@ -3390,7 +3390,7 @@ function addFood(item){
   foodLog.push(item);
   Object.keys(dailyN).forEach(k=>{dailyN[k]+=Number(item.nutriments[k])||0;});
   renderFoodLog();renderNutBars();renderCalorieTracker();runDiseaseAI();updateScore();updateTodaySummary();save();
-  showStat('✓ Added: '+item.name);setTimeout(()=>showStat(''),3000);
+  showStat('Added '+item.name);setTimeout(()=>showStat(''),3000);
 }
 function removeFood(id,indexHint){
   const index=Number.isInteger(indexHint)&&foodLog[indexHint]?.id===id?indexHint:foodLog.findIndex(f=>f.id===id);
