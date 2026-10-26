@@ -929,6 +929,90 @@
     .empty-state.compact{padding:1rem}
     .empty-state.compact .ph{font-size:24px;margin-bottom:.5rem}
 
+    /* ─── EDITORIAL LAYOUT ─────────────────────────────
+       Sections are full-bleed rows divided by hairlines, not stacked cards.
+       Serif section titles carry the hierarchy; icons are kept to the tab bar. */
+    .ios-section-hd{font-family:var(--font-display);font-weight:400;font-size:24px;line-height:1.2;color:var(--lbl);text-transform:none;letter-spacing:0;margin:1.75rem 0 .5rem;padding:0;display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
+    .ios-section-hd span{font-family:var(--font-body)}
+    .ios-section>.ios-section-hd:first-child{margin-top:.75rem}
+    .ios-card,.act-strip,.tips-grid,.wt-grid,.cal-meal,.cal-macro-card,.cal-nutrient-card,.label-scan-card,.rep-card,.wt-form{background:transparent;border:0;border-top:1px solid var(--lbl);border-radius:0;box-shadow:none}
+    .ios-card,.act-strip,.tips-grid,.wt-grid{margin:0 -1rem 0;}
+    .ios-card>*{padding-left:1rem;padding-right:1rem}
+    .ios-card .chk-row,.ios-card .insight-row,.ios-card .sum-c,.ios-card .n-row,.ios-card .food-row,.ios-card .fast-row,.ios-card .wo-item{padding-left:1rem;padding-right:1rem}
+    .ios-card .streak-grid,.ios-card #ins-list,.ios-card #checklist,.ios-card #fast-cards,.ios-card #food-log,.ios-card #nut-bars,.ios-card #wo-hist,.ios-card .sum-grid,.ios-card #dis-body,.ios-card .dis-toggle{padding-left:0;padding-right:0}
+    .chk-row,.insight-row,.sum-c,.n-row,.food-row,.fast-row,.wo-item,.act-btn,.tip-c{border-bottom:1px solid var(--sep2)}
+    .med-card,.macro-snapshot{padding-top:1rem;padding-bottom:1rem}
+    .pts-bar{background:transparent;border-top:1px solid var(--sep2)}
+    .insight-row{display:block}
+    .insight-tag{margin-top:.5rem}
+
+    /* Quick checks: plain rows */
+    .act-btn,.act-btn:nth-child(n){grid-template-columns:1fr auto;padding:1rem}
+    .act-name,.act-desc{grid-column:1}
+    .act-tag{grid-column:2}
+
+    /* Tips: numbered, editorial */
+    .tips-grid{counter-reset:tip}
+    .tip-c{grid-template-columns:48px 1fr;padding:1.25rem 1rem;background:transparent}
+    .tip-c::before{counter-increment:tip;content:counter(tip,decimal-leading-zero);grid-row:1/3;font-family:var(--font-display);font-size:24px;line-height:1;color:var(--accent)}
+    .tip-c h4{font-size:16px;margin-bottom:.25rem}
+
+    /* Summary: label left, number right */
+    .sum-c{grid-template-columns:1fr auto}
+    .sum-lbl{grid-column:1}.sum-val{grid-column:2}.sum-sub{grid-column:2}
+
+    /* Workout picker: a list, not a tile grid */
+    .wt-grid{display:block}
+    .wt-btn{width:100%;flex-direction:row;justify-content:space-between;align-items:baseline;background:transparent;border:0;border-bottom:1px solid var(--sep2);border-radius:0;padding:1rem}
+    .wt-btn.sel{background:var(--accent-l);border-color:var(--sep2)}
+    .wt-name{font-size:16px;font-weight:600;text-align:left}
+    .wt-met{font-size:14px}
+    .wt-form{padding:1rem 0;margin-top:1.5rem}
+    .wt-form-title{font-family:var(--font-display);font-weight:400;font-size:24px}
+
+    /* Full-bleed bands */
+    .quiz-card,.ai-hero{margin:1.75rem -1rem 0;border-radius:0;padding:1.5rem 1rem}
+    .ai-hero{margin-top:0}
+    .cal-overview{margin:0 -1rem;border-radius:0}
+    .quiz-badge{background:transparent;padding:0;color:#F4C9CD}
+
+    /* Buttons as plain text controls */
+    .data-row{flex-wrap:wrap;gap:.5rem}
+    .data-btn{flex:0 0 auto;flex-direction:row;padding:10px 14px;background:transparent;border:1px solid var(--sep);font-size:14px}
+    .data-btn.danger{border-color:var(--accent);background:transparent}
+    .scan-btn{padding:1rem;gap:2px}
+    .hero-quick-actions button{font-weight:600}
+    .call-911{font-size:16px}
+    .cal-meal{margin-bottom:0}
+    .cal-meal-head{padding-left:0;padding-right:0}
+    .cal-food-row,.cal-empty{padding-left:0;padding-right:0}
+    .cal-macro-card,.cal-nutrient-card{padding:1rem 0}
+    .cal-nutrient-card{padding-top:0}
+    .label-scan-card{padding:1rem 0;margin:1.5rem 0}
+    .rep-card{margin-bottom:1rem}
+    .rep-hd{background:transparent;padding-left:0;padding-right:0}
+    .rep-line{padding-left:0;padding-right:0}
+    .report-note{font-size:14px;color:var(--lbl2);margin:.75rem 0 1rem}
+    .sos-row{border-radius:var(--radius)}
+    .sos-badge{display:none}
+    .food-th:empty,.pm-img:empty,.ph-opt-img:empty,.cal-food-thumb:empty{display:none}
+
+    .reminder{border:0;border-top:1px solid var(--sep2);border-radius:0;background:transparent;padding:.75rem 0;margin:0}
+    .reminder .rem-txt strong{font-size:16px}
+    .ios-card .streak-grid{padding:1rem}
+    .med-card .empty{padding:.5rem 0}
+    .act-btn,.act-btn:nth-child(n){background:transparent!important}
+
+    .ios-card[style*="padding:1rem"]{padding:1rem!important}
+    .ios-card[style*="padding:1rem"]>*{padding-left:0;padding-right:0}
+    .ai-strip{gap:0;border-top:1px solid rgba(255,255,255,.2);padding-top:1rem}
+    .ai-sc{background:transparent;text-align:left;padding:0}
+    .ai-sc-v{font-size:24px}
+
+    /* Empty states: one line of text */
+    .empty{font-size:14px;color:var(--lbl2);padding:1rem 0}
+    .ios-card .empty{padding:1rem}
+
   </style>
 </head>
 <body>
@@ -948,9 +1032,9 @@
 <!-- ── SIGN-UP (saved only on this device) ─────────────── -->
 <div id="signup-modal" role="dialog" aria-modal="true" aria-labelledby="su-title">
   <form class="ob-sheet" onsubmit="event.preventDefault();saveSignup()">
-    <div class="disc-icon"><i class="ph ph-hand-waving" aria-hidden="true"></i></div>
+    
     <div class="disc-title" id="su-title">Create your profile</div>
-    <p class="ob-hint">Your profile stays on this device. Nothing is sent to a server.</p>
+    <p class="ob-hint">Saved on this device only.</p>
     <label class="su-field">First name<input id="su-name" type="text" maxlength="40" autocomplete="given-name" required></label>
     <label class="su-field">Email <small>(optional)</small><input id="su-email" type="email" maxlength="80" autocomplete="email"></label>
     <div class="su-row">
@@ -959,14 +1043,14 @@
     </div>
     <div class="su-err" id="su-err" role="alert"></div>
     <button type="submit" class="disc-ok" id="su-submit">Create profile</button>
-    <p class="su-note">A PIN locks the app each time it opens, so others using this phone can't see your health logs.</p>
+    <p class="su-note">A PIN locks the app when it opens.</p>
   </form>
 </div>
 
 <!-- ── PIN LOCK ──────────────────────────────────────── -->
 <div id="lock-modal" role="dialog" aria-modal="true" aria-label="Enter PIN">
   <form class="lock-box" onsubmit="event.preventDefault();unlockApp()">
-    <div style="font-size:32px"><i class="ph ph-lock-simple" aria-hidden="true"></i></div>
+    
     <h2 id="lock-greeting">Welcome back</h2>
     <p>Enter your 4-digit PIN</p>
     <input id="lock-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" aria-label="PIN">
@@ -979,12 +1063,12 @@
 <!-- ── FIRST-LAUNCH DISCLAIMER MODAL ─────────────────── -->
 <div id="disc-modal" role="dialog" aria-modal="true" aria-label="Medical disclaimer">
   <div class="disc-sheet">
-    <div class="disc-icon"><i class="ph ph-first-aid" aria-hidden="true"></i></div>
+    
     <div class="disc-title">Medical Disclaimer</div>
     <div class="disc-body">
       CheckedLife is an <span class="disc-hi">educational wellness tool only</span>. It does not diagnose, treat, or replace professional medical advice.<br><br>
-      Always consult a qualified healthcare provider about your personal stroke risk, symptoms, or any health conditions. <span class="disc-hi">In an emergency, call your local emergency services immediately.</span><br><br>
-      Scores and reports are rule-based using public guidelines (WHO, AHA, FDA) and are not individualized medical assessments.
+      Talk to your doctor about your stroke risk. <span class="disc-hi">In an emergency, call 911.</span><br><br>
+      Scores follow public guidelines (WHO, AHA, FDA). They are not a personal medical assessment.
     </div>
     <button class="disc-ok" onclick="dismissDisc()">I understand, continue</button>
   </div>
@@ -1025,7 +1109,7 @@
   <div class="sp-fact-wrap">
     <div class="sp-fact-lbl">Did you know?</div>
     <div class="sp-fact-card">
-      <div class="sp-fi" id="sp-icon"><i class="ph ph-heartbeat" aria-hidden="true"></i></div>
+      
       <div class="sp-ft" id="sp-fact">Every 40 seconds someone in the US has a stroke. Up to 80% may be preventable with healthy habits and risk-factor control.</div>
     </div>
     <div class="sp-dots" id="sp-dots"></div>
@@ -1041,7 +1125,7 @@
       <div class="hero-in">
         <div class="hero-eyebrow"><span id="hero-hello">CheckedLife</span> · <span id="hero-date"></span></div>
         <h1 class="hero-title">Fuel your day.<br><em>Protect your future.</em></h1>
-        <div class="hero-sub">A simple daily view of food, movement, and habits that support heart and brain health.</div>
+        <div class="hero-sub">Food, movement and habits for today.</div>
         <div class="calorie-card">
           <div>
             <div class="calorie-kicker">Calories remaining</div>
@@ -1054,8 +1138,8 @@
           </div>
         </div>
         <div class="hero-quick-actions">
-          <button type="button" onclick="switchTab('calories',document.getElementById('nav-calories'))"><i class="ph ph-plus" aria-hidden="true"></i> Add food</button>
-          <button type="button" onclick="switchTab('workout',document.getElementById('nav-workout'))"><i class="ph ph-plus" aria-hidden="true"></i> Log activity</button>
+          <button type="button" onclick="switchTab('calories',document.getElementById('nav-calories'))">Add food</button>
+          <button type="button" onclick="switchTab('workout',document.getElementById('nav-workout'))">Log activity</button>
         </div>
         <div class="risk-box">
           <div class="risk-row">
@@ -1070,7 +1154,7 @@
     </div>
 
     <div class="ios-section">
-      <div class="ios-section-hd">Today's nutrition</div>
+      <div class="ios-section-hd">Macros</div>
       <div class="ios-card macro-snapshot">
         <div class="macro-snapshot-head"><span>Macro balance</span><span id="macro-summary">Log food to get started</span></div>
         <div class="macro-bars">
@@ -1084,20 +1168,20 @@
       <div class="ios-section">
       <!-- Reminders -->
       <div id="rem-exercise" class="reminder rem-ex" style="display:none">
-        <span class="rem-icon"><i class="ph ph-person-simple-run" aria-hidden="true"></i></span>
+        
         <div class="rem-txt"><strong>Time to move!</strong><span>Regular activity is linked to lower stroke risk. Aim for about 150 min of moderate activity a week.</span></div>
         <button class="rem-x" aria-label="Dismiss reminder" onclick="dismissRem('rem-exercise')"><i class="ph ph-x" aria-hidden="true"></i></button>
       </div>
       <div id="rem-checklist" class="reminder rem-cl" style="display:none">
-        <span class="rem-icon"><i class="ph ph-check-circle" aria-hidden="true"></i></span>
+        
         <div class="rem-txt"><strong>Finish your checklist</strong><span><span id="rem-done">0</span> of 6 habits done today.</span></div>
         <button class="rem-x" aria-label="Dismiss reminder" onclick="dismissRem('rem-checklist')"><i class="ph ph-x" aria-hidden="true"></i></button>
       </div>
 
-      <div class="ios-section-hd" style="margin-top:.3rem">Medication reminders</div>
+      <div class="ios-section-hd">Medications</div>
       <div class="ios-card med-card">
         <div class="med-top">
-          <div class="med-intro">Add daily reminders at times you choose and mark them when taken. CheckedLife never suggests or changes a dose.</div>
+          <div class="med-intro">Daily reminders for your medications. We never suggest or change a dose.</div>
           <button type="button" class="med-enable" id="med-notify-btn" onclick="enableMedicationNotifications()">Enable alerts</button>
         </div>
         <div id="med-due-banner" class="med-due-banner" aria-live="polite"></div>
@@ -1108,11 +1192,11 @@
         </div>
         <div id="med-list" class="med-list"></div>
         <div id="med-status" class="med-status" role="status"></div>
-        <p class="med-footnote" id="med-footnote">Reminders run while this page is open. Browser alerts depend on device settings and cannot bypass Focus or Do Not Disturb. This list is saved only in this browser.</p>
+        <p class="med-footnote" id="med-footnote">Reminders work while the app is open. Saved on this device.</p>
       </div>
 
       <!-- Streak -->
-      <div class="ios-section-hd" style="margin-top:.3rem">Weekly streak</div>
+      <div class="ios-section-hd">This week</div>
       <div class="ios-card" style="margin-bottom:.7rem">
         <div class="streak-grid" id="streak-bar"></div>
         <div style="display:flex;justify-content:space-between;padding:.3rem .85rem .7rem;font-size:12px;color:var(--lbl2)">
@@ -1122,28 +1206,28 @@
       </div>
 
       <!-- Activity strip -->
-      <div class="ios-section-hd">Quick activities</div>
+      <div class="ios-section-hd">Quick checks</div>
       <div class="act-strip">
         <button class="act-btn" onclick="openBreathing()">
-          <div class="act-icon"><i class="ph ph-wind" aria-hidden="true"></i></div>
+          
           <div class="act-name">Box Breathing</div>
           <div class="act-desc">Slow breathing to relax</div>
           <span class="act-tag">Guided</span>
         </button>
         <button class="act-btn" onclick="openPulseCheck()">
-          <div class="act-icon"><i class="ph ph-heartbeat" aria-hidden="true"></i></div>
+          
           <div class="act-name">Pulse Check</div>
           <div class="act-desc">Camera scan or 15-second count</div>
           <span class="act-tag">1 min</span>
         </button>
         <button class="act-btn" onclick="scrollToQuiz()">
-          <div class="act-icon"><i class="ph ph-brain" aria-hidden="true"></i></div>
+          
           <div class="act-name">Health Quiz</div>
           <div class="act-desc">Test your knowledge</div>
           <span class="act-tag">Quick</span>
         </button>
         <button class="act-btn" onclick="logWater()">
-          <div class="act-icon"><i class="ph ph-drop" aria-hidden="true"></i></div>
+          
           <div class="act-name">Water Break</div>
           <div class="act-desc" id="water-desc">Log a glass now</div>
           <span class="act-tag" id="water-tag">0 / 8</span>
@@ -1151,22 +1235,22 @@
       </div>
 
       <!-- Insights -->
-      <div class="ios-section-hd">Personalized insights <span id="ins-badge" style="font-size:11px;color:var(--blue);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
+      <div class="ios-section-hd">Insights <span id="ins-badge" style="font-size:11px;color:var(--blue);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
       <div class="ios-card" id="insights-card">
-        <div class="empty-state compact" id="ins-empty"><i class="ph ph-chart-line-up" aria-hidden="true"></i><h3>Insights need a few days of logs</h3><p>Log food or workouts on two or more days and personalized suggestions will appear here.</p></div>
+        <p class="empty" id="ins-empty">Insights show up after two days of logging.</p>
         <div id="ins-list"></div>
       </div>
     </div>
 
     <div class="ios-section">
-      <div class="ios-section-hd">Daily checklist</div>
+      <div class="ios-section-hd">Checklist</div>
       <div class="ios-card"><div id="checklist"></div><div class="pts-bar"><div class="pts-bar-top"><span class="pts-lbl">Points today</span><span class="pts-num" id="total-pts">0 / 100</span></div><div class="chk-pbar"><div class="chk-pbar-fill" id="chk-pbar-fill" style="width:0%"></div></div></div></div>
     </div>
 
     <!-- Quiz -->
     <div class="ios-section">
       <div class="quiz-card" id="quiz-card">
-        <div class="quiz-badge"><i class="ph ph-brain" aria-hidden="true"></i> Stroke knowledge quiz</div>
+        <div class="quiz-badge">Quiz</div>
         <div class="quiz-q" id="quiz-q">Loading question…</div>
         <div class="quiz-opts" id="quiz-opts"></div>
         <div class="quiz-exp" id="quiz-exp"></div>
@@ -1175,13 +1259,13 @@
     </div>
 
     <div class="ios-section" style="padding-bottom:1rem">
-      <div class="ios-section-hd" style="margin-top:.2rem">Today's summary</div>
+      <div class="ios-section-hd">Summary</div>
       <div class="ios-card">
         <div class="sum-grid">
-          <div class="sum-c"><div class="sum-icon"><i class="ph ph-barbell" aria-hidden="true"></i></div><div class="sum-lbl">Workout</div><div class="sum-val" id="sum-wo" style="font-size:14px;font-weight:600;color:var(--lbl2)">None yet</div></div>
-          <div class="sum-c"><div class="sum-icon"><i class="ph ph-flame" aria-hidden="true"></i></div><div class="sum-lbl">Cal. Burned</div><div class="sum-val" id="sum-cal" style="color:var(--lbl2);font-size:14px">Log workout</div></div>
-          <div class="sum-c"><div class="sum-icon"><i class="ph ph-grains" aria-hidden="true"></i></div><div class="sum-lbl">Sodium</div><div class="sum-val" id="sum-na" style="color:var(--lbl2);font-size:14px">Log food</div><div class="sum-sub" id="sum-na-s"></div></div>
-          <div class="sum-c"><div class="sum-icon"><i class="ph ph-fork-knife" aria-hidden="true"></i></div><div class="sum-lbl">Calories In</div><div class="sum-val" id="sum-ci" style="color:var(--lbl2);font-size:14px">Log food</div></div>
+          <div class="sum-c"><div class="sum-lbl">Workout</div><div class="sum-val" id="sum-wo" style="font-size:14px;font-weight:600;color:var(--lbl2)">None yet</div></div>
+          <div class="sum-c"><div class="sum-lbl">Cal. Burned</div><div class="sum-val" id="sum-cal" style="color:var(--lbl2);font-size:14px">Log workout</div></div>
+          <div class="sum-c"><div class="sum-lbl">Sodium</div><div class="sum-val" id="sum-na" style="color:var(--lbl2);font-size:14px">Log food</div><div class="sum-sub" id="sum-na-s"></div></div>
+          <div class="sum-c"><div class="sum-lbl">Calories In</div><div class="sum-val" id="sum-ci" style="color:var(--lbl2);font-size:14px">Log food</div></div>
         </div>
       </div>
     </div>
@@ -1191,10 +1275,10 @@
   <div id="tab-workout" class="tp">
     <div class="tab-hd">
       <h1>Workout</h1>
-      <p>MET-based calorie estimates (approximate)</p>
+      <p>Log what you did.</p>
     </div>
     <div class="ios-section" style="padding-bottom:1rem">
-      <div class="ios-section-hd">Choose workout type</div>
+      <div class="ios-section-hd">Pick an activity</div>
       <div class="wt-grid" id="wt-grid"></div>
       <div class="wt-form" id="wt-form" style="display:none;margin-top:.6rem">
         <div class="wt-form-title" id="wf-title">Running</div>
@@ -1206,7 +1290,7 @@
         <button class="ios-btn" onclick="logWorkout()">Log Workout</button>
         <p class="cnf-msg" id="wo-confirm"></p>
       </div>
-      <div class="empty-state" id="wo-empty"><i class="ph ph-sneaker-move" aria-hidden="true"></i><h3>No workouts yet</h3><p>Pick an activity above and log how long you did it. Guidelines suggest about 150 minutes of moderate activity a week.</p></div>
+      <p class="empty" id="wo-empty">No workouts yet.</p>
       <div id="wo-hist-wrap" style="display:none;margin-top:.75rem">
         <div class="ios-section-hd">History</div>
         <div class="ios-card" style="padding:0"><div id="wo-hist"></div></div>
@@ -1219,24 +1303,24 @@
     <section class="food-nutrition-tools">
     <div class="tab-hd">
       <h1>Food &amp; Nutrition</h1>
-      <p>Scan, log, and review today’s food and nutrients</p>
+      <p>What you ate today.</p>
     </div>
     <div class="ios-section" style="padding-bottom:1rem">
       <div class="scan-grid">
         <button class="scan-btn bc" onclick="openScanner()">
-          <span class="si"><i class="ph ph-barcode" aria-hidden="true"></i></span>
+          
           Scan Barcode
           <span>Camera · EAN/UPC</span>
         </button>
         <button class="scan-btn photo" onclick="openPhotoScan()">
-          <span class="si"><i class="ph ph-camera" aria-hidden="true"></i></span>
+          
           Identify Food
           <span>Take or upload photo</span>
         </button>
       </div>
       <section class="label-scan-card" aria-labelledby="label-scan-title">
         <div class="label-scan-title" id="label-scan-title">Nutrition-label reader</div>
-        <p class="label-scan-copy">Take a photo of the Nutrition Facts panel. OCR runs in this browser; check every extracted value before adding it to your log. The first use may need internet to load the OCR engine.</p>
+        <p class="label-scan-copy">Photograph the Nutrition Facts panel, then check the numbers.</p>
         <input type="file" id="label-photo-input" accept="image/*" capture="environment" style="display:none" onchange="readNutritionLabel(this)">
         <button type="button" class="label-camera-btn" onclick="document.getElementById('label-photo-input').click()">Scan a nutrition label</button>
         <div class="label-threshold-row">
@@ -1244,7 +1328,7 @@
           <input class="label-threshold" type="number" id="label-sodium-threshold" min="100" max="2300" step="50" value="400" onchange="saveLabelThreshold()">
           <span>mg / serving</span>
         </div>
-        <p id="label-scan-status" class="label-status" role="status">No label scanned. You can also enter values by hand.</p>
+        <p id="label-scan-status" class="label-status" role="status">Or type the values in.</p>
         <div id="label-fields" class="label-fields">
           <div class="label-field-title">Review serving and values</div>
           <div class="label-grid">
@@ -1266,7 +1350,7 @@
           </details>
           <button type="button" class="label-save-btn" onclick="addLabeledFood()">Add reviewed label to food log</button>
         </div>
-        <p class="med-footnote">The sodium flag is a shopping comparison, not a personal medical limit or a “safe” rating. Review the package label; OCR can misread numbers.</p>
+        <p class="med-footnote">The sodium flag is for comparing products. Check numbers against the package.</p>
       </section>
       <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this)">
       <div class="manual-row">
@@ -1280,13 +1364,13 @@
       <p id="nut-status" class="stat-msg"></p>
 
       <div id="nut-summary" style="display:none;margin-bottom:.6rem">
-        <div class="ios-section-hd">Today's nutrients</div>
+        <div class="ios-section-hd">Nutrients</div>
         <div class="ios-card"><div id="nut-bars"></div></div>
       </div>
 
       <div class="ios-section-hd" id="fl-hd" style="display:none">Food log</div>
       <div class="ios-card" id="food-card" style="display:none"><div id="food-log"></div></div>
-      <div class="empty-state" id="food-empty"><i class="ph ph-bowl-food" aria-hidden="true"></i><h3>No food logged today</h3><p>Scan a barcode, take a photo, or search by name. Calories, sodium and other nutrients add up here as you go.</p><div class="empty-actions"><button type="button" class="primary" onclick="openScanner()">Scan a barcode</button><button type="button" onclick="document.getElementById('food-search-q').focus()">Search by name</button></div></div>
+      <p class="empty" id="food-empty">Nothing logged yet. Scan or search to add food.</p>
 
       <div class="ios-card" id="disease-wrap" style="display:none;overflow:hidden">
         <div class="dis-toggle" onclick="toggleDis()">
@@ -1303,7 +1387,7 @@
     <main class="cal-page">
       <header class="cal-head">
         <div class="cal-headline">
-          <div><h1>Calorie tracker</h1><p>A closer look at today's food, macros, and nutrients.</p></div>
+          <div><h1>Calorie tracker</h1><p>Meals, macros and nutrients.</p></div>
           <span class="cal-date" id="cal-date-label"></span>
         </div>
       </header>
@@ -1324,14 +1408,13 @@
             <div class="cal-meter" aria-hidden="true"><div class="cal-meter-fill" id="ct-meter-fill"></div></div>
             <div class="cal-over-foot"><span>0 kcal</span><span id="ct-meter-goal">2,000 kcal goal</span></div>
             <div class="cal-goal-row">
-              <div class="cal-goal-copy"><strong>Daily calorie goal</strong><span>Your personal tracking setting</span></div>
+              <div class="cal-goal-copy"><strong>Daily goal</strong></div>
               <div class="cal-goal-edit">
                 <input id="cal-goal-input" type="number" min="800" max="6000" step="50" inputmode="numeric" aria-label="Daily calorie goal in kilocalories" onkeydown="if(event.key==='Enter')saveCalorieGoal()"/>
                 <button type="button" onclick="saveCalorieGoal()">Save</button>
               </div>
             </div>
-            <p class="cal-disclaimer">Choose a goal that fits your own tracking context. This setting is not medical advice or a prescribed nutrition target.</p>
-          </div>
+            </div>
           <div class="cal-section-title">Food diary</div>
           <div id="cal-meal-list" class="cal-meal-list"></div>
           <div id="cal-food-status" class="cal-food-status" role="status" aria-live="polite"></div>
@@ -1347,7 +1430,7 @@
           </section>
           <div class="cal-section-title">Nutrient details</div>
           <section class="cal-nutrient-card" id="ct-nutrient-list" aria-label="Nutrient progress"></section>
-          <p class="disc">Reference values are general daily values for tracking and are not individual clinical recommendations. Sugar is compared with the 50 g daily value for <em>added</em> sugars; logged totals also include natural sugars.</p>
+          <p class="disc">Targets are FDA daily values. Sugar uses the added-sugar value.</p>
         </aside>
       </div>
     </main>
@@ -1356,7 +1439,7 @@
 
   <!-- TIPS ───────────────────────────────────────────── -->
   <div id="tab-tips" class="tp">
-    <div class="tab-hd"><h1>Prevention</h1><p>Evidence-based stroke prevention habits</p></div>
+    <div class="tab-hd"><h1>Prevention</h1><p>Habits that lower stroke risk.</p></div>
     <div class="ios-section" style="padding-bottom:1rem">
       <div class="tips-grid" id="tip-grid"></div>
     </div>
@@ -1364,15 +1447,15 @@
 
   <!-- FAST ───────────────────────────────────────────── -->
   <div id="tab-fast" class="tp">
-    <div class="tab-hd"><h1>BE FAST Signs</h1><p>Know the warning signs. Act immediately.</p></div>
+    <div class="tab-hd"><h1>BE FAST</h1><p>Know the signs. Act fast.</p></div>
     <div class="ios-section" style="padding-bottom:1rem">
-      <div class="sos-row" style="background:var(--accent-l);border:1px solid rgba(180,42,54,.25);border-radius:var(--r);margin-bottom:.5rem"><div class="sos-badge" style="background:var(--accent);flex-shrink:0">!</div><div class="sos-c"><h4 style="color:var(--accent-d)">Recognize a stroke FAST</h4><p>Call emergency services immediately if you notice ANY of these symptoms. Treatment works best when started quickly, so every minute counts.</p></div></div>
+      <div class="sos-row" style="background:var(--accent-l);border:1px solid rgba(180,42,54,.25);border-radius:var(--r);margin-bottom:.5rem"><div class="sos-badge" style="background:var(--accent);flex-shrink:0">!</div><div class="sos-c"><h4 style="color:var(--accent-d)">Any of these signs? Call 911.</h4><p>Treatment works best in the first minutes.</p></div></div>
       <div class="ios-card" style="margin-bottom:.5rem;border:1px solid rgba(180,42,54,.25)"><div id="fast-cards"></div></div>
-      <div class="ios-section-hd" style="margin-top:.8rem">Guided FAST check</div>
+      <div class="ios-section-hd">Check now</div>
       <div class="ios-card">
-        <p class="fast-check-intro">If symptoms started suddenly, call 911 now. Do not wait to finish this guide. Check for face drooping, arm weakness, or unusual speech, and tap <strong>Concern</strong> for anything that seems off. If you are unsure, treat it as a concern.</p>
+        <p class="fast-check-intro">Sudden symptoms? Call 911 first. Otherwise, check each sign and tap Concern if anything seems off.</p>
         <div class="fast-camera-panel">
-          <p class="fast-camera-copy"><strong>Optional camera mirror (not a stroke test)</strong>Smile at the camera. Dots and guide lines across your face help you compare the left and right sides, like whether your mouth line stays level. The app does not decide whether your face looks normal, and a normal-looking face cannot rule out a stroke. Do not delay emergency care to use the camera.</p>
+          <p class="fast-camera-copy"><strong>Camera mirror</strong>Smile and compare both sides of your face. The camera can’t rule out a stroke.</p>
           <div class="fast-camera-stage" id="fast-camera-stage">
             <video id="fast-face-video" class="fast-camera-video" playsinline autoplay muted aria-label="Live mirrored camera preview; not recorded"></video>
             <canvas id="fast-face-dots" class="fast-face-dots" aria-hidden="true"></canvas>
@@ -1381,7 +1464,7 @@
             <button type="button" class="primary" id="fast-camera-start" onclick="startFastCamera()">Turn on camera mirror</button>
             <button type="button" id="fast-camera-stop" onclick="stopFastCamera()" hidden>Turn off camera</button>
           </div>
-          <p id="fast-camera-status" class="fast-camera-status" role="status" aria-live="polite">Camera is off. No face images or video are saved.</p>
+          <p id="fast-camera-status" class="fast-camera-status" role="status" aria-live="polite">Camera off.</p>
         </div>
         <div id="fast-check-list" role="group" aria-label="Manual Face, Arms, Speech check">
         <div class="fast-check-row">
@@ -1402,55 +1485,53 @@
           <a href="tel:911">Call 911 now</a>
         </div>
       </div>
-      <p class="disc">The camera mirror runs only on this device; it does not record or save your face. Its dots are a visual guide, not a test. No camera result can rule out a stroke. Sudden symptoms or uncertainty need emergency care.</p>
       <div class="also-box"><h5>Also watch for</h5><ul><li>Sudden severe headache with no known cause</li><li>Sudden numbness or weakness, especially on one side of the body</li><li>Sudden confusion or trouble understanding speech</li><li>Sudden trouble walking or dizziness</li></ul></div>
-      <a href="tel:911" class="call-911"><i class="ph ph-phone" aria-hidden="true"></i> Call 911 (US) · or your local emergency number</a>
-      <p class="disc" style="margin-top:.75rem">This app does not replace medical advice. Always consult your doctor about your personal stroke risk.</p>
-    </div>
+      <a href="tel:911" class="call-911">Call 911</a>
+      </div>
   </div>
 
   <!-- AI REPORT ──────────────────────────────────────── -->
   <div id="tab-ai" class="tp">
-    <div class="tab-hd"><h1>Health Report</h1><p>General guidance · AHA & FDA reference values · stored on this device</p></div>
+    <div class="tab-hd"><h1>Report</h1><p>How today went.</p></div>
     <div class="ios-section" style="padding-bottom:1rem">
       <div class="ai-hero">
         <div class="ai-hero-in">
-          <h2>Your <span>Health</span> Report</h2>
-          <p style="margin-top:.35rem">Summarizes today's habits, workouts, and food log with general guidance. Everything stays on this device.</p>
+          <h2>Today</h2>
+          
           <div class="ai-strip">
             <div class="ai-sc"><div class="ai-sc-v" id="strip-habits">–</div><div class="ai-sc-l">Habits</div></div>
             <div class="ai-sc"><div class="ai-sc-v" id="strip-workout">–</div><div class="ai-sc-l">Workouts</div></div>
             <div class="ai-sc"><div class="ai-sc-v" id="strip-food">–</div><div class="ai-sc-l">Foods</div></div>
-            <div class="ai-sc"><div class="ai-sc-v" id="strip-score">–</div><div class="ai-sc-l">Pts</div></div>
+            <div class="ai-sc"><div class="ai-sc-v" id="strip-score">–</div><div class="ai-sc-l">Points</div></div>
           </div>
         </div>
       </div>
-      <div class="ai-disc-notice" style="display:flex;align-items:flex-start;gap:.6rem;background:var(--accent-l);border:1px solid rgba(180,42,54,.25);border-radius:var(--r2);padding:.8rem 1rem;margin-bottom:.75rem;font-size:12px;color:var(--lbl2);line-height:1.55"><span style="font-size:20px;flex-shrink:0;color:var(--accent)"><i class="ph ph-first-aid" aria-hidden="true"></i></span><span><strong style="color:var(--lbl)">Not medical advice.</strong> Rule-based analysis only. Always consult your doctor or emergency services for real health decisions.</span></div>
+      <p class="report-note">General guidance, not medical advice.</p>
       <div class="no-data" id="no-data-warn" style="display:none">Log a workout or scan food first for a richer report.</div>
       <button class="gen-btn" id="gen-btn" onclick="generateReport()">
-        Generate My Health Report
+        Build today’s report
       </button>
       <div id="report-out" style="display:none"></div>
 
-      <div class="ios-section-hd" style="margin-top:1.2rem">Your profile</div>
+      <div class="ios-section-hd">Profile</div>
       <div class="ios-card" style="padding:1rem">
         <div class="profile-row">
           <div><div class="profile-name" id="profile-name">–</div><div class="profile-meta" id="profile-meta"></div></div>
         </div>
         <div class="data-row">
-          <button class="data-btn" onclick="showSignup(true)"><span class="db-icon"><i class="ph ph-pencil-simple" aria-hidden="true"></i></span>Edit profile</button>
-          <button class="data-btn" id="profile-lock-btn" onclick="lockNow()"><span class="db-icon"><i class="ph ph-lock-simple" aria-hidden="true"></i></span>Lock now</button>
-          <button class="data-btn" id="profile-unpin-btn" onclick="removePin()"><span class="db-icon"><i class="ph ph-lock-simple-open" aria-hidden="true"></i></span>Remove PIN</button>
+          <button class="data-btn" onclick="showSignup(true)">Edit profile</button>
+          <button class="data-btn" id="profile-lock-btn" onclick="lockNow()">Lock now</button>
+          <button class="data-btn" id="profile-unpin-btn" onclick="removePin()">Remove PIN</button>
         </div>
       </div>
 
-      <div class="ios-section-hd" style="margin-top:1.2rem">Data & Privacy</div>
+      <div class="ios-section-hd">Your data</div>
       <div class="ios-card" style="padding:1rem">
-         <p style="font-size:13px;color:var(--lbl2);line-height:1.6;margin-bottom:.85rem">Health logs and pulse summaries are stored in this browser. The FAST camera mirror tracks face points on this device to draw guide dots; it never saves or uploads face images or video. Nutrition-label photos are processed locally and not retained. Barcode and food-search requests go to Open Food Facts and USDA FoodData Central. The barcode scanner, photo-recognition and OCR libraries load from public CDNs (unpkg, jsDelivr) the first time you use them, and fonts load from Google Fonts; photos themselves stay in this browser. Export a backup or clear everything below.</p>
+         <p style="font-size:13px;color:var(--lbl2);line-height:1.6;margin-bottom:.85rem">Everything you log stays on this device. Food lookups use Open Food Facts and USDA.</p>
         <div class="data-row">
-          <button class="data-btn" onclick="exportData()"><span class="db-icon"><i class="ph ph-download-simple" aria-hidden="true"></i></span>Export</button>
-          <button class="data-btn" onclick="importDataClick()"><span class="db-icon"><i class="ph ph-upload-simple" aria-hidden="true"></i></span>Import</button>
-          <button class="data-btn danger" onclick="clearAllData()"><span class="db-icon"><i class="ph ph-trash" aria-hidden="true"></i></span>Clear All</button>
+          <button class="data-btn" onclick="exportData()">Export</button>
+          <button class="data-btn" onclick="importDataClick()">Import</button>
+          <button class="data-btn danger" onclick="clearAllData()">Clear All</button>
         </div>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
         <div class="legal-links"><button type="button" onclick="openLegal('privacy')">Privacy policy</button><button type="button" onclick="openLegal('terms')">Terms of use</button></div>
@@ -1509,7 +1590,7 @@
     <div id="photo-header-wrap" style="display:none">
       <img id="photo-preview" style="width:100%;max-height:180px;object-fit:cover;border-radius:0" alt="captured food">
       <div style="padding:.75rem 1rem;background:var(--ink);display:flex;align-items:center;gap:10px">
-        <div style="width:32px;height:32px;background:rgba(255,255,255,.12);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0"><i class="ph ph-camera" aria-hidden="true"></i></div>
+        
         <div>
           <div style="font-size:10px;color:rgba(255,255,255,.45);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Food match · verify details</div>
           <div id="ai-food-label" style="font-size:14px;font-weight:700;color:#fff;line-height:1.2;margin-top:1px"></div>
@@ -1521,20 +1602,20 @@
     <!-- Photo guesses: pick the right food or type it -->
     <div id="photo-guess-wrap" class="ph-guess" style="display:none">
       <div class="ph-guess-t" id="ph-guess-title">What food is this?</div>
-      <div class="ph-guess-s" id="ph-guess-sub">Tap the closest match, or type the food's name.</div>
+      <div class="ph-guess-s" id="ph-guess-sub">Tap a match or type the name.</div>
       <div class="ph-guess-list" id="ph-guess-list"></div>
       <form class="manual-row" onsubmit="event.preventDefault();pickPhotoGuess(document.getElementById('ph-guess-input').value)">
         <input class="manual-in" id="ph-guess-input" type="text" maxlength="60" placeholder="Type the food, e.g. chicken salad" aria-label="Food name">
         <button class="manual-btn search" type="submit">Search</button>
       </form>
-      <div class="ph-teach"><span style="font-size:20px;color:var(--accent)"><i class="ph ph-book-open" aria-hidden="true"></i></span><span><strong style="color:var(--lbl)">Typing teaches CheckedLife.</strong> When you type the food and add it to your log, the app remembers what this photo looks like so it can recognize that food next time. Learning stays on this device; your photo itself is not saved.</span></div>
+      <div class="ph-teach"><span>Typing the right name teaches the app this food for next time. Learning stays on your device.</span></div>
       <div class="ph-guess-err" id="ph-guess-err" role="status"></div>
       <div class="pm-actions" style="padding-left:0;padding-right:0"><button class="pm-deny" type="button" onclick="closeProductModal()">Cancel</button><button class="pm-conf" type="button" onclick="retakePhoto()">Retake photo</button></div>
     </div>
 
     <!-- Standard header (barcode mode) -->
     <div class="pm-head" id="pm-head-row">
-      <div class="pm-img" id="pm-img"><i class="ph ph-fork-knife" aria-hidden="true"></i></div>
+      <div class="pm-img" id="pm-img"></div>
       <div><div class="pm-nm" id="pm-name">–</div><div class="pm-br" id="pm-brand">–</div><span class="pm-sv" id="pm-sv">–</span></div>
     </div>
 
@@ -1561,7 +1642,7 @@
           <div class="nf-li"><div style="width:6px;height:6px;border-radius:50%;background:var(--orange)"></div>Moderate</div>
           <div class="nf-li"><div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>Healthy</div>
         </div>
-        <div class="nf-fn">*% Daily Values based on a 2,000 calorie diet. Data from USDA FoodData Central or Open Food Facts (crowd-sourced; verify against the package).</div>
+        <div class="nf-fn">*% Daily Value is based on 2,000 calories. Check the package if in doubt.</div>
       </div>
       <div class="pm-actions">
         <button class="pm-deny" id="pm-deny-btn" onclick="closeProductModal()">Not this item</button>
@@ -1596,10 +1677,10 @@
 <!-- Pulse Check Modal -->
 <div class="pulse-modal" id="pulse-modal" role="dialog" aria-modal="true" aria-label="Pulse check">
   <button class="pm2-x" aria-label="Close" onclick="closePulse()"><i class="ph ph-x" aria-hidden="true"></i></button>
-  <div class="pm2-hrt"><i class="ph ph-heartbeat" aria-hidden="true"></i></div>
+  
   <div class="pm2-title">Pulse Check</div>
-  <div class="pm2-sub">Choose a camera estimate or a manual 15-second count. Neither method diagnoses a health condition.</div>
-  <div class="pm2-steps">Camera option: cover the rear lens and flash with a fingertip, keep still, and wait 30 seconds. If the camera or flash is unavailable, count your wrist pulse manually.</div>
+  <div class="pm2-sub">Use the camera, or count for 15 seconds.</div>
+  <div class="pm2-steps">Cover the back camera and flash with a fingertip and hold still for 30 seconds.</div>
   <div class="pm2-ring-wrap">
     <svg width="130" height="130" viewBox="0 0 130 130">
       <circle class="pm2-ring-track" cx="65" cy="65" r="57"/>
@@ -1615,7 +1696,7 @@
     <div id="ppg-result" class="ppg-result" hidden></div>
     <button type="button" class="pm2-btn" id="ppg-start" onclick="startPpgScan()">Start camera scan · 30 seconds</button>
     <button type="button" class="pm2-btn ppg-secondary" id="ppg-stop" onclick="stopPpgScan(true)" style="display:none">Stop and review</button>
-    <p class="ppg-disclaimer">This estimates pulse rate and pulse-interval variability only. A single phone camera cannot measure arterial stiffness or diagnose a condition. If you feel unwell or have sudden stroke symptoms, seek urgent care.</p>
+    <p class="ppg-disclaimer">An estimate, not a diagnosis. Feeling unwell? Get care.</p>
     <div id="ppg-history" class="ppg-history"></div>
   </section>
   <div id="pm2-main">
@@ -1735,8 +1816,8 @@ function phIcon(name,fallback='barbell'){
   const icon=/^ph-[a-z-]+$/.test(String(name))?String(name):'ph-'+fallback;
   return `<i class="ph ${icon}" aria-hidden="true"></i>`;
 }
-const FOOD_ICON=phIcon('ph-fork-knife');
-function foodIconFallback(img){img.parentElement.innerHTML=FOOD_ICON;}
+const FOOD_ICON='';
+function foodIconFallback(img){img.parentElement.innerHTML='';}
 
 // ─── STATE ─────────────────────────────────────────────
 let dailyN={calories:0,fat:0,saturatedFat:0,transFat:0,carbs:0,sugar:0,fiber:0,protein:0,sodium:0,potassium:0,calcium:0,iron:0,vitaminC:0,vitaminA:0,vitaminD:0};
@@ -1902,7 +1983,7 @@ function buildInsights(){
   list.innerHTML=insights.slice(0,5).map(ins=>{
     const tagCls=ins.type==='warn'?'tag-warn':ins.type==='goal'?'tag-goal':'tag-good';
     const tagLbl=ins.type==='warn'?'Attention':ins.type==='goal'?'Goal':'Doing well';
-    return`<div class="insight-row"><div class="insight-icon ${ins.type}">${phIcon(ins.icon,'chart-line-up')}</div><div class="insight-body"><div class="insight-title">${ins.title}</div><div class="insight-detail">${ins.detail}</div><span class="insight-tag ${tagCls}">${tagLbl}</span></div></div>`;
+    return`<div class="insight-row"><div class="insight-body"><div class="insight-title">${ins.title}</div><div class="insight-detail">${ins.detail}</div><span class="insight-tag ${tagCls}">${tagLbl}</span></div></div>`;
   }).join('');
 }
 
@@ -1921,10 +2002,10 @@ function initSplash(){
   const dots=document.getElementById('sp-dots');
   SP_FACTS.forEach((_,i)=>{const d=document.createElement('div');d.className='sp-dot'+(i===0?' on':'');dots.appendChild(d);});
   spTimer=setInterval(()=>{
-    const ft=document.getElementById('sp-fact'),fi=document.getElementById('sp-icon');
-    if(!ft||!fi)return;
+    const ft=document.getElementById('sp-fact');
+    if(!ft)return;
     ft.classList.add('fade');
-    setTimeout(()=>{spIdx=(spIdx+1)%SP_FACTS.length;ft.textContent=SP_FACTS[spIdx].text;fi.innerHTML=phIcon(SP_FACTS[spIdx].icon,'heartbeat');ft.classList.remove('fade');document.querySelectorAll('.sp-dot').forEach((d,i)=>d.classList.toggle('on',i===spIdx));},290);
+    setTimeout(()=>{spIdx=(spIdx+1)%SP_FACTS.length;ft.textContent=SP_FACTS[spIdx].text;ft.classList.remove('fade');document.querySelectorAll('.sp-dot').forEach((d,i)=>d.classList.toggle('on',i===spIdx));},290);
   },2600);
   setTimeout(()=>{
     clearInterval(spTimer);
@@ -2262,7 +2343,7 @@ function renderMedicationPlan(){
     notify.disabled=!('Notification'in window)||Notification.permission==='denied';
   }
   if(!medicationPlan.length){
-    list.innerHTML='<div class="empty-state compact"><i class="ph ph-pill" aria-hidden="true"></i><h3>No reminders yet</h3><p>Add a medication name and time above to get a daily reminder.</p></div>';
+    list.innerHTML='<p class="empty">No reminders yet.</p>';
     return;
   }
   list.innerHTML=medicationPlan.map(m=>{
@@ -2418,7 +2499,7 @@ function updateTodaySummary(){
 }
 
 // ─── TIPS & FAST ───────────────────────────────────────
-function buildTips(){const g=document.getElementById('tip-grid');TIPS.forEach(t=>{const c=document.createElement('div');c.className='tip-c';c.innerHTML=`<div class="tip-icon">${phIcon(t.icon,'heartbeat')}</div><h4>${t.title}</h4><p>${t.text}</p>`;g.appendChild(c);});}
+function buildTips(){const g=document.getElementById('tip-grid');TIPS.forEach(t=>{const c=document.createElement('div');c.className='tip-c';c.innerHTML=`<h4>${t.title}</h4><p>${t.text}</p>`;g.appendChild(c);});}
 function buildFast(){const el=document.getElementById('fast-cards');FAST.forEach(f=>{const row=document.createElement('div');row.className='fast-row';row.innerHTML=`<div class="fast-ltr">${f.letter}</div><div><div class="fast-tt">${f.word}</div><div class="fast-dd">${f.desc}</div></div>`;el.appendChild(row);});}
 function toggleFastConcern(btn){
   const on=btn.getAttribute('aria-pressed')!=='true';
@@ -2491,7 +2572,7 @@ async function startFaceDots(requestId){
     return;
   }
   if(requestId!==fastCameraRequestId)return;
-  status.textContent='Smile and compare the eye and mouth lines on both sides. This is a visual guide only; it cannot rule out a stroke.';
+  status.textContent='Compare the eye and mouth lines on each side.';
   const tick=()=>{
     if(requestId!==fastCameraRequestId||!fastCameraStream)return;
     if(video.readyState>=2&&video.currentTime!==faceDotsLastTime){
@@ -2517,7 +2598,7 @@ function stopFastCamera(){
   const stop=document.getElementById('fast-camera-stop');
   if(stop)stop.hidden=true;
   const status=document.getElementById('fast-camera-status');
-  if(status)status.textContent='Camera is off. No face images or video are saved.';
+  if(status)status.textContent='Camera off.';
 }
 async function startFastCamera(){
   if(fastCameraStream)return;
@@ -2551,7 +2632,7 @@ async function startFastCamera(){
     }
     start.disabled=true;start.textContent='Camera mirror is on';
     stop.hidden=false;
-    status.textContent='Live mirror on. Nothing is recorded or saved. A normal-looking face cannot rule out a stroke.';
+    status.textContent='Mirror on. Nothing is recorded.';
     startFaceDots(requestId);
   }catch(error){
     if(requestedStream)requestedStream.getTracks().forEach(track=>track.stop());
@@ -2570,7 +2651,7 @@ function buildWtGrid(){
   const g=document.getElementById('wt-grid');
   WORKOUTS.forEach(w=>{
     const btn=document.createElement('button');btn.className='wt-btn';btn.id='wb-'+w.id;btn.onclick=()=>selWt(w);
-    btn.innerHTML=`<div class="wt-icon">${phIcon(w.icon)}</div><div class="wt-name">${w.name}</div><div class="wt-met">MET ${w.met}</div>`;
+    btn.innerHTML=`<div class="wt-name">${w.name}</div><div class="wt-met">MET ${w.met}</div>`;
     g.appendChild(btn);
   });
 }
@@ -2579,7 +2660,7 @@ function selWt(w){
   document.querySelectorAll('.wt-btn').forEach(b=>b.classList.remove('sel'));
   document.getElementById('wb-'+w.id).classList.add('sel');
   document.getElementById('wt-form').style.display='block';
-  document.getElementById('wf-title').innerHTML=phIcon(w.icon)+' '+esc(w.name);
+  document.getElementById('wf-title').textContent=w.name;
   buildWtFields(w);
 }
 function getBodyWeight(){
@@ -2621,7 +2702,7 @@ function renderWoHist(){
   wrap.style.display='block';list.innerHTML='';
   workoutLog.slice(0,10).forEach(e=>{
     const el=document.createElement('div');el.className='wo-item';
-    el.innerHTML=`<div class="wo-ic" style="background:var(--bg3)">${phIcon(e.icon)}</div><div class="wo-inf"><div class="wo-nm">${esc(e.name)}</div><div class="wo-meta">${esc(e.date)}${e.extra?' · '+esc(e.extra):''} · ${Number(e.duration)||0} min</div></div><div class="wo-cal">${Number(e.calories)||0} kcal</div>`;
+    el.innerHTML=`<div class="wo-inf"><div class="wo-nm">${esc(e.name)}</div><div class="wo-meta">${esc(e.date)}${e.extra?' · '+esc(e.extra):''} · ${Number(e.duration)||0} min</div></div><div class="wo-cal">${Number(e.calories)||0} kcal</div>`;
     list.appendChild(el);
   });
 }
@@ -3042,7 +3123,7 @@ function showPhotoResults(prods,query){
   document.getElementById('nf-wrap').style.display='none';
   document.getElementById('pm-name').textContent='Results for "'+query+'"';
   document.getElementById('pm-brand').textContent='Select the closest match below';
-  document.getElementById('pm-sv').textContent='';document.getElementById('pm-img').innerHTML=phIcon('ph-camera');
+  document.getElementById('pm-sv').textContent='';document.getElementById('pm-img').innerHTML='';
   const list=document.getElementById('ph-list');list.innerHTML='';
   prods.slice(0,5).forEach((p,i)=>{
     const d=document.createElement('div');d.className='ph-opt'+(i===0?' sel':'');
@@ -3097,8 +3178,8 @@ function updateNutritionLabelFlags(){
     notes.push('Trans fat is listed on this label; review the amount and serving size.');
     out.classList.add('warn');
   }
-  if(!notes.length){out.classList.add('ok');out.textContent='No selected comparison flag. This is not a medical safety assessment.';}
-  else out.textContent=notes.join(' ')+' This is not a personal medical limit.';
+  if(!notes.length){out.classList.add('ok');out.textContent='No flags.';}
+  else out.textContent=notes.join(' ');
 }
 function saveLabelThreshold(){
   const input=document.getElementById('label-sodium-threshold'),value=Number(input.value);
@@ -3428,11 +3509,11 @@ function renderCalorieTracker(){
     const total=items.reduce((sum,row)=>sum+(Number(row.item.nutriments?.calories)||0),0);
     return `<section class="cal-meal" aria-label="${meal} food log">
       <div class="cal-meal-head"><div><div class="cal-meal-title">${meal}</div><div class="cal-meal-meta">${items.length} ${items.length===1?'item':'items'} · ${Math.round(total).toLocaleString('en-US')} kcal</div></div>
-      <button class="cal-add-btn" type="button" aria-label="Add food to ${meal}" onclick="toggleMealTools('${meal}')"><i class="ph ph-plus" aria-hidden="true"></i>Add</button></div>
+      <button class="cal-add-btn" type="button" aria-label="Add food to ${meal}" onclick="toggleMealTools('${meal}')">Add</button></div>
       <div class="cal-tools" id="ct-tools-${slug}">
         <div class="cal-tool-actions">
-          <button class="cal-tool-btn" type="button" aria-label="Scan barcode for ${meal}" onclick="startMealBarcode('${meal}')"><i class="ph ph-barcode" aria-hidden="true"></i>Scan barcode</button>
-          <button class="cal-tool-btn" type="button" aria-label="Estimate food from a photo for ${meal}" onclick="startMealPhoto('${meal}')"><i class="ph ph-camera" aria-hidden="true"></i>Photo estimate</button>
+          <button class="cal-tool-btn" type="button" aria-label="Scan barcode for ${meal}" onclick="startMealBarcode('${meal}')">Scan barcode</button>
+          <button class="cal-tool-btn" type="button" aria-label="Estimate food from a photo for ${meal}" onclick="startMealPhoto('${meal}')">Photo estimate</button>
         </div>
         <div class="cal-search-row"><input id="ct-code-${slug}" type="text" inputmode="numeric" placeholder="Barcode number" aria-label="Barcode number for ${meal}" onkeydown="if(event.key==='Enter')lookupMealBarcode('${meal}','ct-code-${slug}')"><button type="button" onclick="lookupMealBarcode('${meal}','ct-code-${slug}')">Look up</button></div>
         <div class="cal-search-row" style="margin-top:6px"><input id="ct-search-${slug}" type="search" placeholder="Search a food" aria-label="Search food for ${meal}" onkeydown="if(event.key==='Enter')searchCalFood('${meal}','ct-search-${slug}')"><button type="button" onclick="searchCalFood('${meal}','ct-search-${slug}')">Search</button></div>
@@ -3440,7 +3521,7 @@ function renderCalorieTracker(){
       ${items.length?items.map(({item,index})=>{
         const n=item.nutriments||{},image=safeUrl(item.image)?`<img src="${esc(safeUrl(item.image))}" alt="" onerror="this.remove()">`:'';
         return `<div class="cal-food-row"><div class="cal-food-thumb">${image||FOOD_ICON}</div><div class="cal-food-info"><div class="cal-food-name">${esc(item.name||'Food')}</div><div class="cal-food-sub">${esc(item.brand||item.servingNote||'Logged food')}${item.brand&&item.servingNote?' · '+esc(item.servingNote):''}</div></div><span class="cal-food-kcal">${Math.round(Number(n.calories)||0)} kcal</span><button class="cal-food-remove" type="button" aria-label="Remove ${esc(item.name||'food')} from ${meal}" onclick="removeCalorieFood(${index})">×</button></div>`;
-      }).join(''):`<div class="cal-empty"><b>No food logged yet</b>Add an item to start this meal.</div>`}
+      }).join(''):`<div class="cal-empty">Nothing yet.</div>`}
     </section>`;
   }).join('');
   const legacy=foodLog.map((item,index)=>({item,index})).filter(row=>!CAL_MEALS.includes(normalizeMeal(row.item.meal)));
@@ -3484,7 +3565,7 @@ function runDiseaseAI(){
   else if(watch)summary=`Nothing flagged; ${watch} to watch. Largest: <strong>${top.name}</strong>.`;
   else summary="Nothing flagged in today's food log so far.";
   if(n.sodium>2300)summary+=` Sodium is <strong>${Math.round(n.sodium-2300)}mg above</strong> the 2,300 mg daily value.`;
-  document.getElementById('dis-content').innerHTML=`<div class="dis-sum">${summary}</div>${flags.map(renderDisRow).join('')}<p class="disc">General diet-pattern flags from one day of logged food, using FDA/AHA reference values. Not a diagnosis or risk prediction.</p>`;
+  document.getElementById('dis-content').innerHTML=`<div class="dis-sum">${summary}</div>${flags.map(renderDisRow).join('')}<p class="disc">Based on today’s log. Not a diagnosis.</p>`;
 }
 function calcDis(n){
   const mk=(name,score,det)=>({name,score:Math.max(0,Math.min(100,score)),det});
@@ -3891,10 +3972,10 @@ function renderReport(r){
     ${r.bad.map(b=>`<div class="rep-line"><div class="rep-dot b"></div><span>${esc(b)}</span></div>`).join('')}
   </div>
   <div class="rep-card">
-    <div class="rep-hd"><div class="rep-hd-t f">Personalized recommendations</div></div>
+    <div class="rep-hd"><div class="rep-hd-t f">Try next</div></div>
     ${r.recs.map(f=>`<div class="rep-line"><div class="rep-dot f"></div><span>${esc(f)}</span></div>`).join('')}
   </div>
-  <p class="disc">General guidance based on AHA & FDA reference values. Not a substitute for medical advice.</p>`;
+  <p class="disc">Based on AHA and FDA guidelines.</p>`;
 }
 
 
