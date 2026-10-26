@@ -5,5 +5,7 @@ mkdirSync('www', { recursive: true });
 for (const file of ['index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png']) {
   if (existsSync(file)) copyFileSync(file, `www/${file}`);
 }
-if (existsSync('models')) cpSync('models', 'www/models', { recursive: true });
+for (const dir of ['models', 'vendor']) {
+  if (existsSync(dir)) cpSync(dir, `www/${dir}`, { recursive: true });
+}
 console.log('Copied web app to www/');
